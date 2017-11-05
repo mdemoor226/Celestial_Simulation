@@ -4,396 +4,122 @@
  * and open the template in the editor.
  */
 
-#include <cfloat>
+#include <time.h>
 #include "TrackingSystem.h"
 
 using namespace std;
 
-extern std::vector<CelestialPtr> Celestial_Bodies;
-void Add_Object(){
-    Attributes Celestial;
-    string IN, Name, Type;
+void Save_Sim(vector<Celestial> &Sims, Celestial &Active){
     int Count = 0;
-    float Mass, Radius;
-    cout << "\nEnter 'Finished' when you're done entering objects. Any object that isn't completely specified will not be added." << endl;
-    while(true){
-        cout << "Objects Added: " << Count << endl;        
-        cout << "Please enter object name." << endl;
-        cin >> IN;
-        if(str_lower(IN) == "finished")
-            break;
-        bool exist = false;
-        //Test whether object currently exists already or not//
-        for(CelestialPtr Object : Celestial_Bodies){
-            if(Object->get_Name() == IN){
-                exist = true;
-                break;
-            }                
-        }
-        if(exist){
-            cout << "Error, object already exists." << endl;
+    for(Celestial Sim : Sims){
+        if(Sim.get_name() == Active.get_name()){
+            Sims[Count] = Active;
             break;
         }
-        else{
-            cout << "What type of object would you like to create? (Star, Planet, Moon, Black_Hole, Other)" << endl;
-            while(true){
-                cin >> Type;
-                Type = str_lower(Type);
-                if(Type == "star" || Type == "planet" || Type == "moon" || Type == "black_hole" || Type == "other")
-                    break;
-                cout << "Error, invalid input. (Star, Planet, Moon, Black_Hole, Other)" << endl;
-            }
-        }
-        Name = IN;
-        IN = "no";
-        if(!Celestial_Bodies.empty()){
-            cout << "Would you like to launch the Orbit Customizer? (Yes/No)" << endl;
-            IN = yes_no();
-        }
-        if(IN == "yes"){
-            if(Rand_Orbit_Gen(&Celestial, Mass, Radius, Celestial_Bodies, Name))
-                break;
-            cout << endl;
-        }
-        else{
-            cout << "\nPlease enter Mass value." << endl;
-            while(true){
-                IN = verify_double();
-                if(IN[0] == 'f' or IN[0] == 'F')
-                    break;
-                if(0 < convert(IN))
-                    break;
-                else
-                    cout << "Invalid value. Enter a positive mass value" << endl;
-            }
-            if(str_lower(IN) == "finished")
-                break;
-            Mass = convert(IN);
-
-            cout << "\nPlease enter Rx value." << endl;
-            IN = verify_double();
-            if(str_lower(IN) == "finished")
-                break; 
-            Celestial.Rx = convert(IN);
-
-            cout << "\nPlease enter Ry value." << endl;
-            IN = verify_double();
-            if(str_lower(IN) == "finished")
-                break; 
-            Celestial.Ry = convert(IN);
-
-            cout << "\nPlease enter Rz value." << endl;
-            IN = verify_double();
-            if(str_lower(IN) == "finished")
-                break; 
-            Celestial.Rz = convert(IN);
-
-            cout << "\nPlease enter Vx value." << endl;
-            IN = verify_double();
-            if(str_lower(IN) == "finished")
-                break; 
-            Celestial.Vx = convert(IN);        
-
-            cout << "\nPlease enter Vy value." << endl;
-            IN = verify_double();
-            if(str_lower(IN) == "finished")
-                break; 
-            Celestial.Vy = convert(IN); 
-
-            cout << "\nPlease enter Vz value." << endl;
-            IN = verify_double();
-            if(str_lower(IN) == "finished")
-                break; 
-            Celestial.Vz = convert(IN);          
-
-            cout << "\nPlease enter Radius value." << endl;
-            while(true){
-                IN = verify_double();
-                if(IN[0] == 'f' or IN[0] == 'F')
-                    break;
-                if(0 < convert(IN))
-                    break;
-                else
-                    cout << "Invalid value. Enter a positive radius value" << endl;
-            }
-            if(str_lower(IN) == "finished")
-                break; 
-            Radius = convert(IN);
-        }
-        if(Type == "planet")
-            Celestial_Bodies.emplace_back(new Planet(Name, Mass, Celestial, Radius));
-        if(Type == "star")
-            Celestial_Bodies.emplace_back(new Star(Name, Mass, Celestial, Radius));
-        if(Type == "moon")
-            Celestial_Bodies.emplace_back(new Moon(Name, Mass, Celestial, Radius));
-        if(Type == "black_hole")
-            Celestial_Bodies.emplace_back(new Black_Hole(Name, Mass, Celestial, Radius));
-        if(Type == "other")
-            Celestial_Bodies.emplace_back(new Other(Name, Mass, Celestial, Radius));
         Count++;
-    }  
-    cout << "Ok, what now?" << endl;
-}
-
-void Simulate(){
-    if(Celestial_Bodies.empty())
-        cout << "There's nothing to simulate. Add some objects first." << endl;
-    else{
-        double Time, h, hmax, hmin, e;
-        string T, H, Hmax, Hmin, E;
-        
-        cout << "Enter 'Cancel' if you would like to cancel the simulation setup." << endl;
-        cout << "Please enter the time length (in seconds) of the simulation." << endl;
-        T = verify_simdouble();
-        if(str_lower(T) == "cancel"){
-            cout << "Canceled, what now?" << endl;  
-            return;
-        }
-        Time = convert(T);
-
-        cout << "Please enter the initial time step (in seconds) for the simulation." << endl;
-        H = verify_simdouble();
-        if(str_lower(H) == "cancel"){
-            cout << "Canceled, what now?" << endl;  
-            return;
-        }
-        h = convert(H);        
-
-        cout << "Please enter the max time step (in seconds) for the simulation." << endl;
-        Hmax = verify_simdouble();
-        if(str_lower(Hmax) == "cancel"){
-            cout << "Canceled, what now?" << endl;  
-            return;
-        }
-        hmax = convert(Hmax);
-
-        cout << "Please enter the min time step (in seconds) for the simulation." << endl;
-        Hmin = verify_simdouble();
-        if(str_lower(Hmin) == "cancel"){
-            cout << "Canceled, what now?" << endl;  
-            return;
-        }
-        hmin = convert(Hmin);
-
-        cout << "Please enter the error tolerance for the simulation." << endl;
-        E = verify_simdouble();
-        if(str_lower(E) == "cancel"){
-            cout << "Canceled, what now?" << endl;  
-            return;
-        }
-        e = convert(E);        
-
-        Celestial_Bodies[0]->Simulate_Motion(Time,h,hmax,hmin,e);  
-    }    
-}
-
-void Display_Objects(){
-    if(!Celestial_Bodies.empty()){
-        cout << "Here is the current status of all celestial objects." << endl;
-        Celestial_Bodies[0]->Display_Objects();
     }
-    else
-        cout << "There are no objects to display. Add some objects first." << endl;
+    cout << "Saved" << endl;
 }
 
-void Display_Object(){
-    string Name, ID;
-    Attributes V;
-    cout << "Enter the name of the Celestial Body you would like to display." << endl;
-    cin >> Name;
-    bool Control = true;
-    for(CelestialPtr I : Celestial_Bodies){
-        if(Name == I->get_Name()){
-            I->display_Object();
-            Control = false;            
+void Load_Sim(vector<Celestial> &Sims, Celestial &Active){
+    cout << "Warning, loading in a new simulation will overwrite the current one. Would you like to save the current one first?\n";
+    string response = yes_no();
+    if(response == "yes")Save_Sim(Sims, Active);
+    
+    cout << "Enter the name of the simulation you like to load.\n";
+    cin >> response;
+    bool fake = true;
+    for(Celestial Sim : Sims){
+        if(Sim.get_name() == response){
+            Active = Sim;
+            fake = false;
             break;
         }
     }
-    if(Control)
-        cout << "Sorry, Celestial Body not found" << endl;
+    if(fake) cout << "Error, simulation profile does not exist." << endl;
+    else cout << "Done." << endl;
 }
 
-void Remove_Object(){
-    if(Celestial_Bodies.empty())
-        cout << "There is nothing to remove. Add some objects first." << endl;
-    else{
-        string Name;
-        cout << "Enter the name of the object you would like to remove." << endl;
-        cin >> Name;
-        bool Control = true;
-        //Attributes V;
-        int Count = 0;
-        for(CelestialPtr I : Celestial_Bodies){
-            if(Name == I->get_Name()){
-                I->Remove();              
-                Celestial_Bodies.erase(Celestial_Bodies.begin() + Count);
-                Control = false;
-                break;
-            }
-            Count++;          
+void Add_Sim(vector<Celestial> &Sims){
+    cout << "What is the name of the new simulation.\n";
+    string Name;
+    cin >> Name;
+    Sims.push_back(Celestial(Name));
+    cout << "Done." << endl;
+}
+
+void Remove_Sim(vector<Celestial> &Sims){
+    cout << "Enter the name of the simulation you would like to remove.\n";
+    string Name;
+    cin >> Name;
+    bool fake = true;
+    int Count = 0;
+    for(Celestial Sim : Sims){
+        if(Sim.get_name() == Name){
+            Sims.erase(Sims.begin() + Count);
+            fake = false;
+            break;
         }
-        if(Control)
-            cout << "Object does not exist." << endl;
-        else{
-            //Decrement Celestial IDs of each object after 'Count' and decrease SpaceCount by 1//
-            if(!Celestial_Bodies.empty())
-                Count_Decr(Celestial_Bodies[0], Count);
-            cout << "Done. What now?" << endl;
-        }
+        Count++;
     }
+    if(fake) cout << "Error, simulation profile does not exist." << endl;
+    else cout << "Done." << endl;
 }
 
-void Alter_Objects(){
-    if(Celestial_Bodies.empty())//Should be if Object Tracker is empty, needs to be changed//
-        cout << "There is nothing to alter. Add some objects first." << endl;
-    else{
-        string Name;
-        string newName;                
-        cout << "Please enter the name of the object you would like to alter." << endl;
-        cin >> Name;
-        int Pos = get_position(Celestial_Bodies[0], Name);
-        if(0 <= Pos){
-            string Entry;
-            double Rad;
-            double Mss;
-            bool Cancel = false;
-            bool name = false;
-            bool mass = false;
-            bool radius = false;
-            Attributes New = Celestial_Bodies[0]->get_ObjectTracker(Pos);
-            cout << "If you would like to cancel any changes enter 'cancel'." << endl;
-            cout << "If you are done making changes enter 'done'" << endl;
-            while(true){
-                cout << "Which attributes from " << Name << " would you like to change? (Rx, Ry, Rz, Vx, Vy, Vz, Name, Mass, Radius)" << endl;
-                while(true){
-                    cin >> Entry;
-                    Entry = str_lower(Entry);
-                    if(Entry == "name" || Entry == "rx" || Entry == "ry" || Entry == "rz" || Entry == "vx" || Entry == "vy" || Entry == "vz")
-                        break;
-                    if(Entry == "mass" || Entry == "radius" || Entry == "cancel" || Entry == "done")
-                        break;
-                    else
-                        cout << "Invalid entry. Try again." << endl;
-                }    
-                if(Entry == "done")
-                    break;
-                else if(Entry == "cancel"){
-                    Cancel = true;
-                    break;
-                }
-                else{
-                    if(Entry == "name"){
-                        cout << "Please enter a new name" << endl;
-                        cin >> newName;
-                        name = true;               
-                    }
-                    else{
-                        string newValue;
-                        cout << "Please enter a new double value" << endl;
-                        if(Entry == "mass" || Entry == "radius"){
-                            while(true){
-                                newValue = verify_altdouble();
-                                if(str_lower(newValue) == "cancel" || 0 < convert(newValue))//newValue[0] == 'c' || newValue[0] == 'C')
-                                    break;
-                                cout << "Invalid entry. Both the Radius and Mass must be strictly positive." << endl;
-                            }                           
-                        }
-                        else
-                            newValue = verify_altdouble();
-                        if(str_lower(newValue) == "cancel"){
-                            Cancel = true;
-                            break;
-                        }
-                        else{
-                            if(Entry == "rx")
-                                New.Rx = convert(newValue);
-                            if(Entry == "ry")
-                                New.Ry = convert(newValue);
-                            if(Entry == "rz")
-                                New.Rz = convert(newValue);
-                            if(Entry == "vx")
-                                New.Vx = convert(newValue);
-                            if(Entry == "vy")
-                                New.Vy = convert(newValue);
-                            if(Entry == "vz")
-                                New.Vz = convert(newValue);                        
-                            if(Entry == "mass"){
-                                mass = true;
-                                Mss = convert(newValue);
-                            }
-                            if(Entry == "radius"){
-                                radius = true;
-                                Rad = convert(newValue);
-                            }
-                        }                  
-                    }                
-                }           
-            }
-            if(!Cancel){                
-                Celestial_Bodies[0]->set_ObjectTracker(Pos, New);
-                if(name)//Change name if necessary//
-                    Celestial_Bodies[New.ID]->set_Name(newName);
-                if(mass)
-                    Celestial_Bodies[New.ID]->Set_Mass(Mss);
-                if(radius)
-                    Celestial_Bodies[New.ID]->set_Radius(Rad);
-                Celestial_Bodies[New.ID]->set_attributes(New);
-                cout << "Done, what now?" << endl;
-            }
-            else
-                cout << "Canceled. Ok what now?" << endl;    
-        }
-        else
-            cout << "Sorry. Object either doesn't exist or was destroyed in a simulation. Add a new one." << endl;
+void View_Sims(vector<Celestial> &Sims){
+    cout << "Current Simulations:\n";
+    int Count = 1;
+    for(Celestial Sim : Sims){
+        cout << "Simulation #" << Count << ": " << Sim.get_name() << "\n";
+        Count++;
     }
 }
 
 int main(){
-    Initialize();
-    Attributes Celestial;
-    Celestial.Rx = 0.0; Celestial.Ry = 0.0; Celestial.Rz = 0.0; Celestial.Vx = 0.0; Celestial.Vy = 0.0; Celestial.Vz = 0.0;
-    Celestial_Bodies.emplace_back(new Star("Sun",597220000000000000000.0,Celestial,987654321));
-    Celestial.Rx = 70000000000.0; Celestial.Ry = 0.0; Celestial.Rz = 0.0; Celestial.Vx = 0.0; Celestial.Vy = 2385509.050196923; Celestial.Vz = 0.0;
-    Celestial_Bodies.emplace_back(new Planet("Jupiter", 9237000000000000.0, Celestial, 10000000));
-    Celestial.Rx = 5000000000.0; Celestial.Ry = -50000000000.0; Celestial.Rz = 0.0; Celestial.Vx = 0.0; Celestial.Vy = 50000.0; Celestial.Vz = 0.0;
-    Celestial_Bodies.emplace_back(new Planet("Earth",500000000000000000000000000000000.0,Celestial,987321));
-    Celestial.Rx = 5007910000; Celestial.Ry = -49956500000; Celestial.Rz = 444010000; Celestial.Vx = 1317430; Celestial.Vy = 7290370; Celestial.Vz = 2172960;
-    Celestial_Bodies.emplace_back(new Moon("Daniel", 500000, Celestial, 462300));
-    Celestial.Rx = 4235670000; Celestial.Ry = -49653000000; Celestial.Rz = 823960000; Celestial.Vx = 1770000; Celestial.Vy = -753565; Celestial.Vz = -958138;
-    Celestial_Bodies.emplace_back(new Moon("Michael", 200000, Celestial, 492200));
-    Celestial.Rx = 452450000; Celestial.Ry = 999380000; Celestial.Rz = 944590000; Celestial.Vx = 2.1058; Celestial.Vy = 465134; Celestial.Vz = -4.05;
-    Celestial_Bodies.emplace_back(new Moon("Thomas", 21600000, Celestial, 1060800));    
-    Celestial.Rx = 700000070.0; Celestial.Ry = 0.0; Celestial.Rz = 800200000; Celestial.Vx = 0.0; Celestial.Vy = 0.0; Celestial.Vz = -50000;
-    Celestial_Bodies.emplace_back(new Planet("Mars", 600000000.0, Celestial,43553));    
-    Celestial.Rx = 5000000000.0; Celestial.Ry = -50000000000.0; Celestial.Rz = 2000000.0; Celestial.Vx = 0.0; Celestial.Vy = 50000.0; Celestial.Vz = -5000.0;
-    Celestial_Bodies.emplace_back(new Moon("Moon", 300000.0, Celestial, 10000));
-    Celestial.Rx = 0.0; Celestial.Ry = 0.0; Celestial.Rz = 4248934090.0; Celestial.Vx = 55632.0; Celestial.Vy = 77797.0; Celestial.Vz = -83932;
-    Celestial_Bodies.emplace_back(new Planet("Venus", 9500000000000.0, Celestial, 800892));
-
+    srand(static_cast<unsigned int>(time(0)));
+    Initialize();   
+    Celestial Sim_Init("Default");
+    Celestial Active_Sim = Sim_Init; 
+    Init_Sim(&Active_Sim);
+    vector<Celestial> Sims = {Active_Sim};  
+    
     string In;
-    cout << "Welcome to the Celestial Animator. For help enter 'help'." << endl;  
+    cout << "Welcome to the Celestial Animator." << endl;  
     while(true){
         cin >> In;
         In = str_lower(In);
        
         if(In == "add")
-            Add_Object();        
+            Active_Sim.Add_Object(&Active_Sim);        
         else if(In == "settings")
             Set_Defaults();
         else if(In == "remove")
-            Remove_Object();
+            Active_Sim.Remove_Object();
         else if(In == "display")
-            Display_Object();
-        else if(In == "displayobjects")
-            Display_Objects();
+            Active_Sim.View_Object();
+        else if(In == "displayall")
+            Active_Sim.View_Objects();
         else if(In == "alter")
-            Alter_Objects();
+            Active_Sim.Alter_Object();
         else if(In == "simulate")
-            Simulate();
+            Active_Sim.Simulate();
+        else if(In == "load")
+            Load_Sim(Sims, Active_Sim);
+        else if(In == "save")
+            Save_Sim(Sims, Active_Sim);
+        else if(In == "new")
+            Add_Sim(Sims);
+        else if(In == "delete")
+            Remove_Sim(Sims);
+        else if(In == "view")
+            View_Sims(Sims);
         else if(In == "help")
-            cout << "Enter 'Add' to start adding objects to the system. Enter 'Remove' to remove an object from the system.\n"
-                    "Enter 'Alter' to change the values of an object. Enter 'Display' to display a specific object. And enter 'DisplayObjects' to display every object.\n"
-                "To simulate the motion of all objects type 'Simulate'. To alter the Orbit Customizer Settings type 'Settings'.\nEnter 'help' for help and 'quit' to quit." << endl << endl;                 
+            cout << "View       : Display a list of current simulation profiles.\nNew        : Create a new simulation profile.\n"
+                    "Delete     : Delete a simulation profile.\nSave       : Save the current simulation profile.\nLoad       : Load in a different simulation profile.\n"
+                    "Add        : Add objects to the system.\nRemove     : Remove an object from the system.\n"
+                    "Alter      : Change the values/attributes of an object.\nDisplay    : Display the attributes of a specific object.\n"
+                    "Displayall : Display the attributes of every object.\nSimulate   : Run a simulation."
+                    "\nSettings   : View and alter the Orbit Customizer Settings.\nHelp       : List the commands.\nQuit       : Exit the program.\n" << endl;                 
         else if(In == "quit")
             break;
         else
@@ -402,8 +128,4 @@ int main(){
     }
 }
 
-/*
- *                                 if(0 < convert(newValue))
-                                    break;
-                                else
- */
+

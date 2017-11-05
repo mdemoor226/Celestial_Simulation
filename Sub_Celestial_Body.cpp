@@ -5,16 +5,14 @@
  */
 
 #include "TrackingSystem.h"
-#include <time.h>
 
 using namespace std;
 
-extern std::vector<CelestialPtr> Celestial_Bodies;
 const char* All_Colors[7] = {"Red", "Blue", "Green", "Ice", "Purple", "Orange", "Brown"};//Will Probably Change in the future
 
-Star::Star(const std::string name, float mass, Attributes values, float radius) : Celestial_Body(name, mass, values, radius){
+Star::Star(const std::string name, float mass, Attributes values, float radius, Celestial* celestialptr) : Celestial_Body(name, mass, values, radius, celestialptr){
     Brightness = Brightness_Calc(mass);    
-    Lightvector.push_back(Brightness);
+    Celestial_Vec->Lightvector.push_back(Brightness);
     if(mass <= 10000000000)
         Color = "Red";
     else if(mass <= 250000000000000000000000000.0)
@@ -22,14 +20,13 @@ Star::Star(const std::string name, float mass, Attributes values, float radius) 
     else
         Color = "Blue";
     
-    Bright_ID = StarCount;
-    values.ID = SpaceCount;
-    ObjectTracker.insert(ObjectTracker.begin() + StarCount/*+1?*/, values);
-    StarCount++;
-    SpaceCount++;
+    Bright_ID = Celestial_Vec->StarCount;
+    values.ID = Celestial_Vec->SpaceCount;
+    Celestial_Vec->ObjectTracker.insert(Celestial_Vec->ObjectTracker.begin() + Celestial_Vec->StarCount/*+1?*/, values);
+    Celestial_Vec->StarCount++;
+    Celestial_Vec->SpaceCount++;
 }
 
-int Celestial_Body::StarCount = 0;
 bool Star::Modified = false;
 
 void Star::Set_Mass(float mass){
@@ -41,19 +38,19 @@ void Star::Set_Mass(float mass){
     else
         Color = "Blue";    
     Brightness = Brightness_Calc(mass);
-    Lightvector[Bright_ID] = Brightness;
+    Celestial_Vec->Lightvector[Bright_ID] = Brightness;
 }
 
 void Star::Remove(){
     if(!Modified){
         Modified = true;
-        for(int i=Bright_ID + 1; i<StarCount; i++){
-            Celestial_Bodies[ObjectTracker[i].ID]->Remove();
+        for(int i=Bright_ID + 1; i<Celestial_Vec->StarCount; i++){
+            Celestial_Vec->Celestial_Bodies[Celestial_Vec->ObjectTracker[i].ID]->Remove();
         }        
-        Lightvector.erase(Lightvector.begin() + Bright_ID);
-        ObjectTracker.erase(ObjectTracker.begin() + Bright_ID);//remove_element(Bright_ID);
-        StarCount--;
-        SpaceCount--;
+        Celestial_Vec->Lightvector.erase(Celestial_Vec->Lightvector.begin() + Bright_ID);
+        Celestial_Vec->ObjectTracker.erase(Celestial_Vec->ObjectTracker.begin() + Bright_ID);//remove_element(Bright_ID);
+        Celestial_Vec->StarCount--;
+        Celestial_Vec->SpaceCount--;
         Modified = false;
     }
     else{
@@ -76,10 +73,12 @@ void Star::Draw(){
 }
 *///////////////////////////////////////////////////////////////////////
 
-Non_Star::Non_Star(const string name, float mass, Attributes values, float radius) : Celestial_Body(name, mass, values, radius){
-    values.ID = SpaceCount;
-    ObjectTracker.push_back(values);
-    SpaceCount++;
+Non_Star::Non_Star(const string name, float mass, Attributes values, float radius, Celestial* celestialptr) : Celestial_Body(name, mass, values, radius, celestialptr){
+    values.ID = Celestial_Vec->SpaceCount;
+    vector<Attributes> Test = Celestial_Vec->ObjectTracker;
+    Celestial_Vec->ObjectTracker.push_back(values);
+    Test = Celestial_Vec->ObjectTracker;
+    Celestial_Vec->SpaceCount++;
 }
 
 void Non_Star::Set_Mass(float mass){
@@ -88,17 +87,17 @@ void Non_Star::Set_Mass(float mass){
 
 void Non_Star::Remove(){
     int Count = 0;
-    for(Attributes Track : ObjectTracker){
+    for(Attributes Track : Celestial_Vec->ObjectTracker){
         if(Track.ID == Values.ID){
-            ObjectTracker.erase(ObjectTracker.begin() + Count);//remove_element(Count);
+            Celestial_Vec->ObjectTracker.erase(Celestial_Vec->ObjectTracker.begin() + Count);//remove_element(Count);
             break;
         }
         Count++;
     }
-    SpaceCount--;
+    Celestial_Vec->SpaceCount--;
 }
 
-Black_Hole::Black_Hole(const string name, float mass, Attributes values, float radius) : Non_Star(name, mass, values, radius){
+Black_Hole::Black_Hole(const string name, float mass, Attributes values, float radius, Celestial* celestialptr) : Non_Star(name, mass, values, radius, celestialptr){
     Color = "Black";
 }
 
@@ -112,8 +111,7 @@ void Black_Hole::Draw(){//Light does not reflect off of or illuminate Black Hole
 }
 *//////////////////////////////////////////////////////////////////////////////
 
-Planet::Planet(std::string name, float mass, Attributes values, float radius) : Non_Star(name, mass, values, radius){
-    srand(static_cast<unsigned int>(time(0)));
+Planet::Planet(std::string name, float mass, Attributes values, float radius, Celestial* celestialptr) : Non_Star(name, mass, values, radius, celestialptr){
     int New;
     if(rand() % 2 == 0){//Mixed Colors
         int Num = (rand() % 4) + 1;//Number of Colors (4 max)//This is arbitrary and can be changed if needed//
@@ -154,7 +152,7 @@ void Planet::Draw(){//Light Reflects off of and illuminates Planet//
 }
 *//////////////////////////////////////////////////////////////////////////////
 
-Moon::Moon(string name, float mass, Attributes values, float radius) : Non_Star(name, mass, values, radius){
+Moon::Moon(string name, float mass, Attributes values, float radius, Celestial* celestialptr) : Non_Star(name, mass, values, radius, celestialptr){
     Color = "White";
 }
 
@@ -168,7 +166,7 @@ void Moon::Draw(){//Light affects Moon//
 }
 *//////////////////////////////////////////////////////////////////////////////
 
-Other::Other(string name, float mass, Attributes values, float radius) : Non_Star(name, mass, values, radius){
+Other::Other(string name, float mass, Attributes values, float radius, Celestial* celestialptr) : Non_Star(name, mass, values, radius, celestialptr){
     Color = "Brown";
 }
 

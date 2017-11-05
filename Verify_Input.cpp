@@ -10,7 +10,7 @@
 
 using namespace std;
 
-string str_lower(const string Input){
+string str_lower(const string Input){//This function can be replaced by a macro//
     string Out;
     vector<char> v(Input.length()+1);
     strcpy(&v[0], Input.c_str());

@@ -15,24 +15,21 @@
 
 using namespace std;
 
-vector<CelestialPtr> Celestial_Bodies;//Keep Global//
-Celestial_Body::Celestial_Body(const string Name, const float Mass, const Attributes Celestial, const float Radius){
+Celestial_Body::Celestial_Body(const string Name, const float Mass, const Attributes Cel, const float Radius, Celestial* celestialptr){
     this->Name = Name;
     this->Mass = Mass;
     this->Radius = Radius;
-    Values.ID = SpaceCount;
-    Values.Rx = Celestial.Rx;
-    Values.Ry = Celestial.Ry;
-    Values.Rz = Celestial.Rz;
-    Values.Vx = Celestial.Vx;
-    Values.Vy = Celestial.Vy;
-    Values.Vz = Celestial.Vz;
-    Status = "Intact";//Status Set Here//
+    Values.ID = celestialptr->SpaceCount;
+    Values.Rx = Cel.Rx;
+    Values.Ry = Cel.Ry;
+    Values.Rz = Cel.Rz;
+    Values.Vx = Cel.Vx;
+    Values.Vy = Cel.Vy;
+    Values.Vz = Cel.Vz;
+    Status = "Intact";
+    Celestial_Vec = celestialptr;
 }
 
-vector<Attributes> Celestial_Body::ObjectTracker;
-vector<float> Celestial_Body::Lightvector;
-int Celestial_Body::SpaceCount = 0;
 float Celestial_Body::RSmax = 0.0;
 int Celestial_Body::SizeScale = 0;
 float Celestial_Body::SpScale = 0.0;
@@ -40,9 +37,9 @@ int Celestial_Body::SpaceScale = 0;
 
 void Celestial_Body::Display_Objects(){
     cout << "Displaying Objects: " << endl;
-    for(Attributes i : ObjectTracker){
+    for(Attributes i : Celestial_Vec->ObjectTracker){
         cout << "////////////////////////////////////////////////////////" << endl;
-        print_attributes(i, Celestial_Bodies[i.ID]->Name, Celestial_Bodies[i.ID]->Mass, Celestial_Bodies[i.ID]->Radius);
+        print_attributes(i, Celestial_Vec->Celestial_Bodies[i.ID]->Name, Celestial_Vec->Celestial_Bodies[i.ID]->Mass, Celestial_Vec->Celestial_Bodies[i.ID]->Radius);
     }
     cout << "////////////////////////////////////////////////////////" << endl << endl;
 }
@@ -66,10 +63,10 @@ void Celestial_Body::print_attributes(Attributes V, string name, float Mass, flo
 void Celestial_Body::update_attributes(){
     Attributes V;
     bool Destroyed;
-    for(CelestialPtr Body : Celestial_Bodies){
+    for(CelestialPtr Body : Celestial_Vec->Celestial_Bodies){
         Destroyed = true;
         V = Body->Values;
-        for(Attributes I : ObjectTracker){
+        for(Attributes I : Celestial_Vec->ObjectTracker){
             if(V.ID == I.ID){
                 Body->Values = I;
                 Destroyed = false;
@@ -77,30 +74,14 @@ void Celestial_Body::update_attributes(){
             }                
         }
         if(Destroyed){
-            Body->Status = "Destroyed";//Status set here///////////////
+            Body->Status = "Destroyed";
         }
     }
 }
 
-//Sets and Gets//
+//Sets Gets//
 Attributes Celestial_Body::get_attributes(){
     return Values;
-}
-
-void Celestial_Body::set_attributes(Attributes Set){
-    Values = Set;
-}
-
-void Celestial_Body::set_Name(const string name){
-    Name = name;
-}
-
-void Celestial_Body::set_ObjectTracker(int Place, Attributes Set){
-    ObjectTracker[Place] = Set;
-}
-
-void Celestial_Body::set_Radius(float radius){
-    Radius = radius;
 }
 
 float Celestial_Body::get_Mass(){
@@ -115,10 +96,6 @@ string Celestial_Body::get_Name(){
     return Name;
 }
 
-Attributes Celestial_Body::get_ObjectTracker(int Place){
-    return ObjectTracker[Place];
-}
-
 //Scale functions for the future//Will be used later in OpenGL//
 void Celestial_Body::Set_Scale(){
     if(RScale < RSmax)
@@ -128,16 +105,16 @@ void Celestial_Body::Set_Scale(){
 }
 
 void Celestial_Body::Set_Scalers(){//This code needs to be tested//    
-    for(CelestialPtr Solar : Celestial_Bodies){
+    for(CelestialPtr Solar : Celestial_Vec->Celestial_Bodies){
         Solar->Set_Scale();
         if(Solar->RScale < Solar->Radius)
             Solar->RScale = Solar->Radius;
     }   
-    for(CelestialPtr Solar : Celestial_Bodies){
+    for(CelestialPtr Solar : Celestial_Vec->Celestial_Bodies){
         if(Solar->Max)
             RSmax = Solar->RScale;
     }
-    for(CelestialPtr Solar : Celestial_Bodies){
+    for(CelestialPtr Solar : Celestial_Vec->Celestial_Bodies){
         if(RSmax < Solar->RScale)
             Solar->RScale = RSmax;
     }    
@@ -165,7 +142,9 @@ void Celestial_Body::Dec_SizeScale(){
 
 void Celestial_Body::Initialize_Sim(vector<Attributes> &K1, vector<Attributes> &K1Copy, vector<Attributes> &K2, vector<Attributes> &K2Copy,
         vector<Attributes> &K3, vector<Attributes> &K3Copy, vector<Attributes> &K4, vector<Attributes> &K4Copy, vector<Attributes> &K5, 
-        vector<Attributes> &K5Copy, vector<Attributes> &K6, vector<Attributes> &Input, vector<Attributes> &Result, vector<Attributes> &Correction){
+        vector<Attributes> &K5Copy, vector<Attributes> &K6, vector<Attributes> &Input, vector<Attributes> &Result, vector<Attributes> &Correction, 
+        vector<Attributes> &Tracker){
+    //Prepare the simulation vectors by clearing them and deallocating all previously allocated memory//
     K1.clear();
     K1.shrink_to_fit();
     K1Copy.clear();
@@ -195,22 +174,21 @@ void Celestial_Body::Initialize_Sim(vector<Attributes> &K1, vector<Attributes> &
     Correction.clear();
     Correction.shrink_to_fit();
     
-    for(int i=0; i<ObjectTracker.size(); i++){
-      K1.push_back(Values);
-      K2.push_back(Values);
-      K3.push_back(Values);
-      K4.push_back(Values);
-      K5.push_back(Values);
-      K6.push_back(Values);
-    }
-    
+    //Initialize each K vector 
+    K1 = Tracker;
+    K2 = Tracker;
+    K3 = Tracker;
+    K4 = Tracker;
+    K5 = Tracker;
+    K6 = Tracker;
+
     float Rmax = 0.0;
-    for(CelestialPtr Solar : Celestial_Bodies){
+    for(CelestialPtr Solar : Celestial_Vec->Celestial_Bodies){
         Solar->RScale = Radius;
         if(Rmax < Solar->Radius)
             Rmax = Solar->Radius;
     }
-    for(CelestialPtr Solar : Celestial_Bodies)
+    for(CelestialPtr Solar : Celestial_Vec->Celestial_Bodies)
         Solar->Size_Constant = Rmax/Radius;
     RSmax = Rmax;    
 }
@@ -256,6 +234,7 @@ vector<Attributes>& operator*(const double C, vector<Attributes> &One){
 
 void Celestial_Body::Simulate_Motion(double Time,double h,double hmax,double hmin, double e){
 vector<Attributes> K1, K1Copy, K2, K2Copy, K3, K3Copy, K4, K4Copy, K5, K5Copy, K6, Input, Result, Correction;
+vector<Attributes> Tracker = Celestial_Vec->ObjectTracker;
 double c[24];
 c[0] = 0.25;
 c[1] = 3.0/32.0;
@@ -295,11 +274,11 @@ cout << endl;
 
 double t = 0.0;
 cout << "Simulating..." << endl;
-is_collision(t);//Check to see if any object starts inside another object//
-Initialize_Sim(K1, K1Copy, K2, K2Copy, K3, K3Copy, K4, K4Copy, K5, K5Copy, K6, Input, Result, Correction);
+is_collision(t, Tracker);//Check to see if any object starts inside another object//
+Initialize_Sim(K1, K1Copy, K2, K2Copy, K3, K3Copy, K4, K4Copy, K5, K5Copy, K6, Input, Result, Correction, Tracker);
 
 //Simulation Loop//
-while(t<Time){
+while(t<Time){//This code cannot be parallelized//
     Trigger = false;
     Last = false;
     //Runge-Kutta-Fehlberg Method. This is where the simulation magic happens.//
@@ -308,26 +287,26 @@ while(t<Time){
             h = hnext;
         if(h == hmin)
             Last = true;
-        K1 = RK_Functions(K1, ObjectTracker);////////////Calculate K1/////////////////// 
+        K1 = RK_Functions(K1, Tracker);////////////Calculate K1/////////////////// 
         K1Copy = K1;
-        Input = (c[0]*h)*K1 + ObjectTracker;
+        Input = (c[0]*h)*K1 + Tracker;
         K2 = RK_Functions(K2, Input);///////////////Calculate K2/////////////////// 
         K2Copy = K2; K1 = K1Copy;          
-        Input = (c[1]*h)*K1 + (c[2]*h)*K2 + ObjectTracker;           
+        Input = (c[1]*h)*K1 + (c[2]*h)*K2 + Tracker;           
         K3 = RK_Functions(K3,Input);///////////////Calculate K3////////////////////
         K3Copy = K3; K1 = K1Copy; K2 = K2Copy;
-        Input = (c[3]*h)*K1 - (c[4]*h)*K2 + (c[5]*h)*K3 + ObjectTracker;                   
+        Input = (c[3]*h)*K1 - (c[4]*h)*K2 + (c[5]*h)*K3 + Tracker;                   
         K4 = RK_Functions(K4,Input);///////////////Calculate K4////////////////////
         K4Copy = K4; K1 = K1Copy; K2 = K2Copy; K3 = K3Copy;
-        Input = (c[6]*h)*K1 - (c[7]*h)*K2 + (c[8]*h)*K3 - (c[9]*h)*K4 + ObjectTracker;
+        Input = (c[6]*h)*K1 - (c[7]*h)*K2 + (c[8]*h)*K3 - (c[9]*h)*K4 + Tracker;
         K5 = RK_Functions(K5,Input);//////////////Calculate K5/////////////////////
-        K5Copy = K5; K1 = K1Copy; K2 = K2Copy; K3 = K3Copy; K4 = K4Copy; Result = ObjectTracker;
+        K5Copy = K5; K1 = K1Copy; K2 = K2Copy; K3 = K3Copy; K4 = K4Copy; Result = Tracker;
         Input = Result - (c[10]*h)*K1 + (c[11]*h)*K2 - (c[12]*h)*K3 + (c[13]*h)*K4 - (c[14]*h)*K5;
         K6 = RK_Functions(K6,Input);///////////////Calculate K6////////////////////
         K1 = K1Copy; K3 = K3Copy; K4 = K4Copy; K5 = K5Copy;
-        Result = (c[15]*h)*K1 + (c[16]*h)*K3 + (c[17]*h)*K4 - (c[18]*h)*K5 + ObjectTracker;
+        Result = (c[15]*h)*K1 + (c[16]*h)*K3 + (c[17]*h)*K4 - (c[18]*h)*K5 + Tracker;
         K1 = K1Copy; K3 = K3Copy; K4 = K4Copy; K5 = K5Copy;
-        Correction = (c[19]*h)*K1 + (c[20]*h)*K3 + (c[21]*h)*K4 - (c[22]*h)*K5 + (c[23]*h)*K6 + ObjectTracker;
+        Correction = (c[19]*h)*K1 + (c[20]*h)*K3 + (c[21]*h)*K4 - (c[22]*h)*K5 + (c[23]*h)*K6 + Tracker;
         Correction = Correction - Result;
         R = Get_R(Correction, h);
         D = pow((e/(2*R)),0.25);
@@ -344,77 +323,54 @@ while(t<Time){
         hnext = hmax;
     t = t + h;
     h = hnext;
-    ObjectTracker = Result;
+    Tracker = Result;
     
     //Check for collisions//
     i = 0;
-    Size = ObjectTracker.size();
-    while(i < Size){
-        Control = 0;
-        C = ObjectTracker[i];
+    Size = Tracker.size();
+    while(i < Size){//This code can be parallelized//
+        Control = 1;
+        C = Tracker[i];
         j = i + 1;
         while(j<Size){
-            T = ObjectTracker[j];
-            Rad = Celestial_Bodies[C.ID]->Radius + Celestial_Bodies[T.ID]->Radius;
+            T = Tracker[j];
+            Rad = Celestial_Vec->Celestial_Bodies[C.ID]->Radius + Celestial_Vec->Celestial_Bodies[T.ID]->Radius;
             Dist = Distance_Calc(C.Rx - T.Rx, C.Ry - T.Ry, C.Rz - T.Rz);
             if(Dist<=Rad){//Collision Handling//
-                if(Celestial_Bodies[T.ID]->Mass <= Celestial_Bodies[C.ID]->Mass){
-                   cout << Celestial_Bodies[T.ID]->Name << " crashed into " << Celestial_Bodies[C.ID]->Name << " at time: " << t << endl << endl;
+                if(Celestial_Vec->Celestial_Bodies[T.ID]->Mass <= Celestial_Vec->Celestial_Bodies[C.ID]->Mass){
+                   cout << Celestial_Vec->Celestial_Bodies[T.ID]->Name << " crashed into " << Celestial_Vec->Celestial_Bodies[C.ID]->Name << " at time: " << t << endl << endl;
                    //Update the Attributes value for C using the resulting velocity from the collision momentum calculation//                   
                    C = Momentum(C,T);
-                   ObjectTracker[i] = C;
-                   //Remove T//
-                   ObjectTracker.erase(ObjectTracker.begin() + j);
-                   K1.pop_back();
-                   K1Copy.pop_back();
-                   K2Copy.pop_back();
-                   K2.pop_back();
-                   K3.pop_back();
-                   K3Copy.pop_back();
-                   K4.pop_back();
-                   K4Copy.pop_back();
-                   K5.pop_back();
-                   K5Copy.pop_back();
-                   K6.pop_back();
-                   Input.pop_back();
-                   Result.pop_back();
-                   Correction.pop_back();
-                   Size = ObjectTracker.size(); 
+                   Tracker[i] = C;
+                   //Remove T and decrease size of vectors in algorithm by 1//
+                   Tracker.erase(Tracker.begin() + j);
+                   K1.erase(K1.begin() + j); K1Copy.pop_back(); K2Copy.pop_back(); K2.erase(K2.begin() + j); K3.erase(K3.begin() + j); K3Copy.pop_back();K4.erase(K4.begin() + j);
+                   K4Copy.pop_back(); K5.erase(K5.begin() + j); K5Copy.pop_back(); K6.erase(K6.begin() + j); Input.pop_back(); Result.pop_back(); Correction.pop_back();
+                   Size = Tracker.size(); 
                 }
                 else{
-                   cout << Celestial_Bodies[C.ID]->Name << " crashed into " << Celestial_Bodies[T.ID]->Name << " at time: " << t << endl << endl;
+                   cout << Celestial_Vec->Celestial_Bodies[C.ID]->Name << " crashed into " << Celestial_Vec->Celestial_Bodies[T.ID]->Name << " at time: " << t << endl << endl;
                    //Update the Attributes value for T using the resulting velocity from the collision momentum calculation//
                    T = Momentum(T,C);
-                   ObjectTracker[j] = T;
-                   //Remove C//
-                   ObjectTracker.erase(ObjectTracker.begin() + i);
-                   K1.pop_back();
-                   K1Copy.pop_back();
-                   K2Copy.pop_back();
-                   K2.pop_back();
-                   K3.pop_back();
-                   K3Copy.pop_back();
-                   K4.pop_back();
-                   K4Copy.pop_back();
-                   K5.pop_back();
-                   K5Copy.pop_back();
-                   K6.pop_back();
-                   Input.pop_back();
-                   Result.pop_back();
-                   Correction.pop_back();
-                   Size = ObjectTracker.size();
-                   Control = 1;
+                   Tracker[j] = T;
+                   //Remove C and decrease size of vectors in algorithm by 1//
+                   Tracker.erase(Tracker.begin() + i);
+                   K1.erase(K1.begin() + i); K1Copy.pop_back(); K2Copy.pop_back(); K2.erase(K2.begin() + i); K3.erase(K3.begin() + i); K3Copy.pop_back();K4.erase(K4.begin() + i);
+                   K4Copy.pop_back(); K5.erase(K5.begin() + i); K5Copy.pop_back(); K6.erase(K6.begin() + i); Input.pop_back(); Result.pop_back(); Correction.pop_back();
+                   Size = Tracker.size();
+                   Control = 0;
                    break;
                 }                 
             }
             else
                j++;
         }
-        if(Control == 0)
+        if(Control)
            i++;
     } 
 }
-
+Celestial_Vec->ObjectTracker.clear();
+Celestial_Vec->ObjectTracker = Tracker;
 update_attributes();
 cout << "Final Simulation Result:" << endl;
 Display_Objects();
@@ -423,7 +379,7 @@ Display_Objects();
 double Celestial_Body::Get_R(const vector<Attributes>& Correction, const double h){
     double R = 0.0;
     double M1,M2;
-    //Find and obtain the largest magnitude out of every position and velocity vector in the entire list// 
+    //Find and obtain the largest magnitude out of every position and velocity vector in the entire list//Max Norm 
     for(Attributes V : Correction){
         M1 = sqrt(pow(V.Rx,2) + pow(V.Ry,2) + pow(V.Rz,2));
         M2 = sqrt(pow(V.Vx,2) + pow(V.Vy,2) + pow(V.Vz,2));
@@ -434,12 +390,11 @@ double Celestial_Body::Get_R(const vector<Attributes>& Correction, const double 
     return R;//Return the result divided by the timestep//
 }
 
-vector<Attributes>& Celestial_Body::RK_Functions(vector<Attributes> &Temp, vector<Attributes> &Alt){
+vector<Attributes>& Celestial_Body::RK_Functions(vector<Attributes> &Temp, vector<Attributes> &Alt){//This code can be parallelized// 
     Position Result;
     //Implementing the functions calculating the components of the K values in the RKF45 algorithm// 
     for(int Num = 0; Num<Alt.size(); Num++){        
         Result = Acceleration(Alt, Num);
-        Temp[Num].ID = Alt[Num].ID;
         Temp[Num].Vx = G*Result.Rx;
         Temp[Num].Vy = G*Result.Ry;
         Temp[Num].Vz = G*Result.Rz;
@@ -484,7 +439,7 @@ Position Celestial_Body::Acceleration(vector<Attributes>& Alt, int Num){
             Rcurr.Rx = Alt[Curr].Rx;
             Rcurr.Ry = Alt[Curr].Ry;
             Rcurr.Rz = Alt[Curr].Rz;
-            Result = Result + Calculations(Rnum, Rcurr, Celestial_Bodies[Alt[Curr].ID]->Mass);
+            Result = Result + Calculations(Rnum, Rcurr, Celestial_Vec->Celestial_Bodies[Alt[Curr].ID]->Mass);
             }
         Curr++;
     }       
@@ -511,51 +466,51 @@ double Celestial_Body::Distance_Calc(const double X, const double Y,const double
 
 Attributes Celestial_Body::Momentum(Attributes One, Attributes Two){
     double M1,M2;
-    float Mass1 = Celestial_Bodies[One.ID]->Mass;
-    float Mass2 = Celestial_Bodies[Two.ID]->Mass;
+    float Mass1 = Celestial_Vec->Celestial_Bodies[One.ID]->Mass;
+    float Mass2 = Celestial_Vec->Celestial_Bodies[Two.ID]->Mass;
     //Calculating the resulting velocity of Object One due to the inelastic collision of Object Two by using conservation of momentum//
     M1 = Mass1/(Mass1 + Mass2);
     M2 = Mass2/(Mass1 + Mass2);
     One.Vx = M1*One.Vx + M2*Two.Vx;
     One.Vy = M1*One.Vy + M2*Two.Vy;
     One.Vz = M1*One.Vz + M2*Two.Vz;
-    Celestial_Bodies[One.ID]->Mass = Mass1 + Mass2;
+    Celestial_Vec->Celestial_Bodies[One.ID]->Mass = Mass1 + Mass2;
     return One;    
 }
 
-void Celestial_Body::is_collision(const double t){//This function can still be improved a little//
+void Celestial_Body::is_collision(const double t, vector<Attributes> &Tracker){
      int Control;
      double R,D;
      Attributes C, T;
      int i = 0;
      int j;
-     int Size = ObjectTracker.size();
+     int Size = Tracker.size();
      while(i < Size){
          Control = 0;
-         C = ObjectTracker[i];
+         C = Tracker[i];
          j = i + 1;
          while(j<Size){
-             T = ObjectTracker[j];
-             R = Celestial_Bodies[C.ID]->Radius + Celestial_Bodies[T.ID]->Radius;
+             T = Tracker[j];
+             R = Celestial_Vec->Celestial_Bodies[C.ID]->Radius + Celestial_Vec->Celestial_Bodies[T.ID]->Radius;
              D = Distance_Calc(C.Rx - T.Rx, C.Ry - T.Ry, C.Rz - T.Rz);
              if(D<=R){
-                 if(Celestial_Bodies[T.ID]->Mass <= Celestial_Bodies[C.ID]->Mass){
-                    cout << Celestial_Bodies[T.ID]->Name << " crashed into " << Celestial_Bodies[C.ID]->Name << " at time: " << t << endl << endl;
+                 if(Celestial_Vec->Celestial_Bodies[T.ID]->Mass <= Celestial_Vec->Celestial_Bodies[C.ID]->Mass){
+                    cout << Celestial_Vec->Celestial_Bodies[T.ID]->Name << " crashed into " << Celestial_Vec->Celestial_Bodies[C.ID]->Name << " at time: " << t << endl << endl;
                     //Update the Attributes value for C using the resulting velocity from the collision momentum calculation//                   
                     C = Momentum(C,T);
-                    ObjectTracker[i] = C;
+                    Tracker[i] = C;
                     //Remove T//
-                    ObjectTracker.erase(ObjectTracker.begin() + j);
-                    Size = ObjectTracker.size(); 
+                    Tracker.erase(Tracker.begin() + j);
+                    Size = Tracker.size(); 
                  }
                  else{
-                    cout << Celestial_Bodies[C.ID]->Name << " crashed into " << Celestial_Bodies[T.ID]->Name << " at time: " << t << endl << endl;
+                    cout << Celestial_Vec->Celestial_Bodies[C.ID]->Name << " crashed into " << Celestial_Vec->Celestial_Bodies[T.ID]->Name << " at time: " << t << endl << endl;
                     //Update the Attributes value for T using the resulting velocity from the collision momentum calculation//
                     T = Momentum(T,C);
-                    ObjectTracker[j] = T;
+                    Tracker[j] = T;
                     //Remove C//
-                    ObjectTracker.erase(ObjectTracker.begin() + i);
-                    Size = ObjectTracker.size();
+                    Tracker.erase(Tracker.begin() + i);
+                    Size = Tracker.size();
                     Control = 1;
                     break;
                  }                 
@@ -567,39 +522,12 @@ void Celestial_Body::is_collision(const double t){//This function can still be i
             i++;
      }        
 }
-//double no_nonsense();//Under Construction//Create Mass to Radius Correspondence algorithm
-int get_position(CelestialPtr Body, const string name){
-    int Counter = 0;
-    vector<Attributes> Track = Body->ObjectTracker;
-    for(Attributes i : Track){
-        if(Celestial_Bodies[i.ID]->Name == name)
-            return Counter;//Unsafe Return?
-        Counter++;
-    }
-    return -1;
-}
 
 string Get_Status(CelestialPtr Celestial){
     return Celestial->Status;
 }
 
-void Count_Decr(CelestialPtr Solar, int Decrement){
-    int Element = 0;
-    vector<Attributes> Track = Solar->ObjectTracker;
-    for(int i=Decrement; i<Celestial_Bodies.size(); i++){
-        Element = 0;
-        for(Attributes Tracker : Track){
-            if(Tracker.ID == Celestial_Bodies[i]->Values.ID){
-                Tracker.ID--;
-                Track[Element] = Tracker;                
-                break;
-            }
-            Element++;
-        }
-        Celestial_Bodies[i]->Values.ID--;
-    }
-    Solar->ObjectTracker = Track;
-}
+//double no_nonsense();//Under Construction//Create Mass to Radius Correspondence algorithm
 
 
 ////////////////////////////////////////Extra Code To Debug/Test Out Program/////////////////////////////////////////////////////////////////////////////

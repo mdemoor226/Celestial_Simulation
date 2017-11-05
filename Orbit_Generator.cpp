@@ -16,7 +16,6 @@
  
  */
 
-#include <time.h>
 #include <cfloat>
 #include "TrackingSystem.h"
 
@@ -36,6 +35,7 @@ double SLRec_Calc(const float, const double*, const float);
 float get_theta(double, double, double);
 bool Verify_Mass(float*, float*);
 
+//Settings//
 Settings Set;
 iMass Mass_Val;
 iPosition Pos_Val;
@@ -107,7 +107,6 @@ int Rand_Orbit_Gen(Attributes* Body, float &GenMass, float &GenRadius, vector<Ce
     //Support Variables//
     double translate[3];
     double P1[2];
-    srand(static_cast<unsigned int>(time(0)));
 /////////////////////////////////////User Specification Block////////////////////////////////////
     while(true){
         string Answer;
@@ -290,7 +289,8 @@ int Rand_Orbit_Gen(Attributes* Body, float &GenMass, float &GenRadius, vector<Ce
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     /////////////////////////////////////////RNG Block//////////////////////////////////////////////////
         if(Set.IMass != Full){
-            if(ObjMass = Gen_Mass(&OrbMass) == -1)
+            ObjMass = Gen_Mass(&OrbMass);
+            if(ObjMass == -1)
                 return 1;
         }
         if(Set.IRadius != Full)
@@ -304,16 +304,16 @@ int Rand_Orbit_Gen(Attributes* Body, float &GenMass, float &GenRadius, vector<Ce
         if(!Set.Sampler && Set.IEccentric != Full)    
             Eccent = Gen_Eccent();        
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////Information Processing Block////////////////////////////////////         
+    ////////////////////////////////////Information Processing Block////////////////////////////////////  
         //Apply Translation//
         Pos[0] += translate[0];//x
         Pos[1] += translate[1];//y
         Pos[2] += translate[2];//z
-////////////////////////////////////////////////////////////////////////////////////////////////
+
         //Rotate Initial Position onto x-z(or whatever respective 2-D) plane, save the inverse transformation for later//
         Theta = get_rotation(Axis, Pos);//HERE
         Rotate(Pos, Axis, Theta);
-////////////////////////////////////////////////////////////////////////////////////////////////
+
         //Translate into a 2-D "(x,y)" coordinate//
         if(Axis == 'Z' || Axis == 'X'){//x-z plane to x-y coordinate
             P1[0] = Pos[0];
@@ -356,12 +356,12 @@ int Rand_Orbit_Gen(Attributes* Body, float &GenMass, float &GenRadius, vector<Ce
     double L = sqrt(u*G*OrbMass*ObjMass*SLRec);
     double E = G*OrbMass*ObjMass*(Eccent*Eccent - 1)/(2*SLRec);
     float Angle;
-    
+
     Vel[1] = L/(u*(sqrt(P1[0]*P1[0] + P1[1]*P1[1])));//Vtan     
     Vel[0] = (2*((E + G*OrbMass*ObjMass/(sqrt(P1[0]*P1[0] + P1[1]*P1[1])))/u)) - Vel[1]*Vel[1];//Vrad
     if(Vel[0] < 0)
         Vel[0] = 0;
-    Vel[0] = sqrt(Vel[0]);//Given the starting angle, whether the square root is positive or negative will determine whether the new orbit is clockwise or counter-clockwise//Just let it always be positive//
+    Vel[0] = sqrt(Vel[0]);//Given the starting angle, whether the square root is positive or negative will determine whether the new orbit is clockwise or counter-clockwise//
     if(1 < Eccent)    
         Vel[0] *= -1;
     
