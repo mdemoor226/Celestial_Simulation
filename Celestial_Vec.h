@@ -77,9 +77,9 @@ class Celestial{
         int SpaceCount;
         int StarCount; 
     private:
-        Generator Orbit_Gen;
         int get_position(const std::string);
-        void Count_Decr(int);
+        void Count_Decr(int);        
+        Generator Orbit_Gen;
         std::string Sim_Name;  
 };
 
