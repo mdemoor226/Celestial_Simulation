@@ -19,30 +19,70 @@
 class Celestial_Body;
 typedef std::shared_ptr<Celestial_Body> CelestialPtr;
 
+class Generator{
+    public:
+        Generator();
+        void Set_Defaults();
+        int Rand_Orbit_Gen(Attributes*, float&, float&, std::vector<CelestialPtr>&,const std::string);
+   
+    private:
+        void Initialize();
+        //Settings Support Functions//
+        void print_settings();
+        void print_User_Settings();
+        void Set_Settings(bool Def);
+        void Set_Body(bool Def);
+        void Set_Axis(bool Def);
+        void Set_Eccentric(bool Def);
+        void Set_Radius(bool Def);
+        void Set_Position(bool Def);
+        void Set_Mass(bool Def);
+        
+        //Orbit Generator Support Functions//
+        float Gen_Mass(float*);
+        float Gen_Radius();
+        float Gen_Eccent();
+        int Gen_Position(std::vector<CelestialPtr>&, float, double*, double*);
+        void Specify_Path(std::vector<double*>&, double*, float*, float, float&, double&);
+        int Point_Sampler(std::vector<double*>&, float*, float*);
+        float get_rotation(double*);
+        void Rotate(double*, float);
+        double get_Error(std::vector<double*>&, float, float, double);
+        int LS_Calculations(std::vector<double*>&, double*, float);
+        int Least_Squares(double*, double*, std::vector<double*>&, float);
+        double SLRec_Calc(const float, const double*, const float);
+        float get_theta(double, double, double);
+        bool Verify_Mass(float*, float*);
+        Options Default;//Default Settings
+        Options Active;//Active Settings
+};
+
 class Celestial{
-    friend void Init_Sim(Celestial*);
-    std::vector<CelestialPtr> Celestial_Bodies;
-    std::vector<Attributes> ObjectTracker;
-    std::vector<float> Lightvector;        
-    int SpaceCount;
-    int StarCount;    
+    friend void Init_Sim(Celestial*);   
     public:
         Celestial(const std::string);
         void Simulate();
         void Add_Object(Celestial*);
         void Remove_Object();
-        void Alter_Object();        
+        void Alter_Object();
+        void Change_Settings();
         void View_Object() const;
         void View_Objects() const;
-        std::string get_name() const;        
-
+        std::string get_name() const;
+        
+        //Public Celestial Attributes//
+        std::vector<CelestialPtr> Celestial_Bodies;
+        std::vector<Attributes> ObjectTracker;
+        std::vector<float> Lightvector;        
+        int SpaceCount;
+        int StarCount; 
     private:
+        Generator Orbit_Gen;
         int get_position(const std::string);
         void Count_Decr(int);
         std::string Sim_Name;  
 };
 
-//Settings Class//
 
 #endif /* CELESTIAL_VEC_H */
 

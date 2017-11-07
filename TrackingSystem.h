@@ -100,7 +100,7 @@ class Non_Star: public Celestial_Body{
         //Virtual Draw// = 0;
 };
 
-class Black_Hole: public Non_Star{//Celestial_Body{
+class Black_Hole: public Non_Star{
     public:
         Black_Hole(const std::string, float, Attributes, float, Celestial*);
         virtual ~Black_Hole(){}
@@ -108,7 +108,7 @@ class Black_Hole: public Non_Star{//Celestial_Body{
 };
 
 
-class Planet: public Non_Star{//Celestial_Body{
+class Planet: public Non_Star{
     public:
         Planet(std::string, float, Attributes, float, Celestial*);
         virtual ~Planet(){}
@@ -118,20 +118,18 @@ class Planet: public Non_Star{//Celestial_Body{
         std::vector<const char*> Colors;
 };
 
-class Moon: public Non_Star{//Celestial_Body{
+class Moon: public Non_Star{
     public:
         Moon(std::string, float, Attributes, float, Celestial*);
         virtual ~Moon(){}
         //Virtual Draw//Light affects Moon//
 };
 
-class Other: public Non_Star{//Celestial_Body{
+class Other: public Non_Star{
     public:
         Other(std::string, float, Attributes, float, Celestial*);
         virtual ~Other(){}
         //Virtual Draw//Light affects Other//
 };
-
-int Rand_Orbit_Gen(Attributes*, float&, float&, std::vector<CelestialPtr>&,const std::string);
 
 #endif /* TRACKINGSYSTEM_H */

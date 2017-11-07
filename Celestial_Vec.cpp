@@ -13,6 +13,10 @@ Celestial::Celestial(const string Name) : Sim_Name(Name){
     SpaceCount = 0;
 }
 
+void Celestial::Change_Settings(){
+    Orbit_Gen.Set_Defaults();
+}
+
 //This code still needs to be commented out
 void Celestial::Add_Object(Celestial* Sim){
     Attributes Celestial;
@@ -55,7 +59,7 @@ void Celestial::Add_Object(Celestial* Sim){
             IN = yes_no();
         }
         if(IN == "yes"){
-            if(Rand_Orbit_Gen(&Celestial, Mass, Radius, Celestial_Bodies, Name))
+            if(Orbit_Gen.Rand_Orbit_Gen(&Celestial, Mass, Radius, Celestial_Bodies, Name))
                 break;
             cout << endl;
         }
@@ -134,7 +138,7 @@ void Celestial::Add_Object(Celestial* Sim){
 }
 
 void Celestial::Simulate(){
-    if(Celestial_Bodies.empty())
+    if(ObjectTracker.empty())
         cout << "There's nothing to simulate. Add some objects first." << endl;
     else{
         double Time, h, hmax, hmin, e;
@@ -186,7 +190,7 @@ void Celestial::Simulate(){
 }
 
 void Celestial::View_Objects() const{
-    if(!Celestial_Bodies.empty()){
+    if(!ObjectTracker.empty()){
         cout << "Here is the current status of all celestial objects." << endl;
         Celestial_Bodies[0]->Display_Objects();
     }
@@ -220,7 +224,6 @@ void Celestial::Remove_Object(){
         cout << "Enter the name of the object you would like to remove." << endl;
         cin >> Name;
         bool Control = true;
-        //Attributes V;
         int Count = 0;
         for(CelestialPtr I : Celestial_Bodies){
             if(Name == I->get_Name()){
@@ -243,7 +246,7 @@ void Celestial::Remove_Object(){
 }
 
 void Celestial::Alter_Object(){
-    if(Celestial_Bodies.empty())//Should be if Object Tracker is empty, needs to be changed//
+    if(Celestial_Bodies.empty())
         cout << "There is nothing to alter. Add some objects first." << endl;
     else{
         string Name;

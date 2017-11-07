@@ -8,196 +8,200 @@
 
 using namespace std;
 
-//To do list: replace globals with a singleton Settings Class object//
-//Orbit Generator Settings//
-extern Settings Set;
-extern iMass Mass_Val;
-extern iPosition Pos_Val;
-extern iRadius Rad_Val;
-extern int Ecc_Dec;
-extern int Ecc_Range;
-extern std::string Orbit;
-extern char Axis;
+Generator::Generator(){Initialize();}
 
-//Default Values//
-extern Settings Default;
-extern iMass MassDefault;
-extern iPosition Pos_Def;
-extern iRadius Rad_Def;
-extern int Ecc_Dec_Def;
-extern int Ecc_Range_Def;
-extern char Axis_Def;
-extern std::string Body_Def;
-
-void Initialize(){//Initialize Defaults//This function might not be necessary//
-    Settings Seti;
-    iMass Mass_Vali;
-    iPosition Pos_Vali;
-    iRadius Rad_Vali;
-    int Ecc_Deci;
-    int Ecc_Rangei;
-    
-    Seti.IMass = Zero;
-    Seti.IPosition = Zero;
-    Seti.Axis = false;
-    Seti.IRadius = Zero;
-    Seti.IEccentric = Zero;
-    Seti.Perihelion = false;
-    Seti.Body = false;
-    Seti.Sampler = false;
-    ////////////Mass///////////////
-    Mass_Vali.Max = 1000;
-    Mass_Vali.Min = 1;
-    Mass_Vali.Powermax = 15;
-    Mass_Vali.Powermin = 5;
-    Mass_Vali.Decimal = 0;
-    //////////Position/////////////
-    Pos_Vali.Decimalx = 3;
-    Pos_Vali.Decimaly = 3;//0;
-    Pos_Vali.Decimalz = 3;
-    Pos_Vali.Maxx = 100;
-    Pos_Vali.Minx = 0;
-    Pos_Vali.Maxy = 100;
-    Pos_Vali.Miny = 0;
-    Pos_Vali.Maxz = 100;
-    Pos_Vali.Minz = 0;
-    Pos_Vali.Powerxmax = 7;
-    Pos_Vali.Powerxmin = 6;
-    Pos_Vali.Powerymax = 7;
-    Pos_Vali.Powerymin = 6;            
-    Pos_Vali.Powerzmax = 7;
-    Pos_Vali.Powerzmin = 6;
-    Pos_Vali.X = Maybe;
-    Pos_Vali.Y = Maybe;
-    Pos_Vali.Z = Maybe;
-    ///////////Radius//////////////
-    Rad_Vali.Decimal = 3;
-    Rad_Vali.Max = 10;
-    Rad_Vali.Min = 1;
-    Rad_Vali.Powermax = 8;
-    Rad_Vali.Powermin = 4;
-    Ecc_Deci = 3;
-    Ecc_Rangei = 0;
-    
-    //Apply Defaults//
-    Default = Seti;
-    MassDefault = Mass_Vali;
-    Pos_Def = Pos_Vali;
-    Rad_Def = Rad_Vali;
-    Ecc_Dec_Def = Ecc_Deci;
-    Ecc_Range_Def = Ecc_Rangei;//No greater than 2//
-    Axis_Def = 'Z';
-    Body_Def = "Sun";
+void Generator::Set_Defaults(){
+    print_settings();
+    cout << endl;
+    string Answer;
+    while(true){
+        cout << "Which default value would you like to change? (User, Mass, Position, Radius, Eccentricity, Axis, Body) Enter 'Print' to print the current settings and 'Done' when done" << endl;
+        while(true){
+        cin >> Answer;
+            Answer = str_lower(Answer);
+            if(Answer == "user" || Answer == "mass" || Answer == "position" || Answer == "radius" || Answer == "eccentricity" || Answer == "axis" || Answer == "body" || Answer == "print")
+                break;
+            if(Answer == "done")
+                break;
+            cout << "Error, invalid input." << endl;
+        }
+        if(Answer == "done")
+            break;
+        if(Answer == "user")
+            Set_Settings(true);
+        if(Answer == "mass")
+            Set_Mass(true);
+        if(Answer == "position")
+            Set_Position(true);
+        if(Answer == "radius")
+            Set_Radius(true);
+        if(Answer == "eccentricity")
+            Set_Eccentric(true);
+        if(Answer == "axis")
+            Set_Axis(true);
+        if(Answer == "body")
+            Set_Body(true);
+        if(Answer == "print")
+            print_settings();    
+    }
 }
 
-void print_User_Settings(){
+void Generator::Initialize(){//Initialize Defaults//This function might not be necessary//   
+    Default.Set.IMass = Zero;
+    Default.Set.IPosition = Zero;
+    Default.Set.Axis = false;
+    Default.Set.IRadius = Zero;
+    Default.Set.IEccentric = Zero;
+    Default.Set.Perihelion = false;
+    Default.Set.Body = false;
+    Default.Set.Sampler = false;
+    ////////////Mass///////////////
+    Default.Mass_Val.Max = 1000;
+    Default.Mass_Val.Min = 1;
+    Default.Mass_Val.Powermax = 15;
+    Default.Mass_Val.Powermin = 5;
+    Default.Mass_Val.Decimal = 0;
+    //////////Position/////////////
+    Default.Pos_Val.Decimalx = 3;
+    Default.Pos_Val.Decimaly = 3;//0;
+    Default.Pos_Val.Decimalz = 3;
+    Default.Pos_Val.Maxx = 100;
+    Default.Pos_Val.Minx = 0;
+    Default.Pos_Val.Maxy = 100;
+    Default.Pos_Val.Miny = 0;
+    Default.Pos_Val.Maxz = 100;
+    Default.Pos_Val.Minz = 0;
+    Default.Pos_Val.Powerxmax = 7;
+    Default.Pos_Val.Powerxmin = 6;
+    Default.Pos_Val.Powerymax = 7;
+    Default.Pos_Val.Powerymin = 6;            
+    Default.Pos_Val.Powerzmax = 7;
+    Default.Pos_Val.Powerzmin = 6;
+    Default.Pos_Val.X = Maybe;
+    Default.Pos_Val.Y = Maybe;
+    Default.Pos_Val.Z = Maybe;
+    ///////////Radius//////////////
+    Default.Rad_Val.Decimal = 3;
+    Default.Rad_Val.Max = 10;
+    Default.Rad_Val.Min = 1;
+    Default.Rad_Val.Powermax = 8;
+    Default.Rad_Val.Powermin = 4;
+    
+    //////////Other////////////////
+    Default.Ecc_Dec = 3;
+    Default.Ecc_Range = 0;
+    Default.Axis = 'Z';
+    Default.Orbit = "Sun";
+}
+
+void Generator::print_User_Settings(){
     cout << "///////////////////Operational Settings/////////////////////////" << endl;
     cout << "Mass: ";
-    if(Default.IMass == Zero)
+    if(Default.Set.IMass == Zero)
         cout << "Zero User Specification\n";
-    else if(Default.IMass == Partial)
+    else if(Default.Set.IMass == Partial)
         cout << "Partial User Specification (RNG Parameters are user specified)\n";
     else
         cout << "Full User Specification\n";
     cout << "Position: ";
-    if(Default.IPosition == Zero)
+    if(Default.Set.IPosition == Zero)
         cout << "Zero User Specification\n";
-    else if(Default.IPosition == Partial)
+    else if(Default.Set.IPosition == Partial)
         cout << "Partial User Specification\n";
     else
         cout << "Full User Specification\n";
     cout << "Radius: ";
-    if(Default.IRadius == Zero)
+    if(Default.Set.IRadius == Zero)
         cout << "Zero User Specification\n";
-    else if(Default.IRadius == Partial)
+    else if(Default.Set.IRadius == Partial)
         cout << "Partial User Specification\n";
     else
         cout << "Full User Specification\n";    
     cout << "Eccentricity: ";
-    if(Default.IEccentric == Zero)
+    if(Default.Set.IEccentric == Zero)
         cout << "Zero User Specification\n";
-    else if(Default.IEccentric == Partial)
+    else if(Default.Set.IEccentric == Partial)
         cout << "Partial User Specification\n";
     else
         cout << "Full User Specification\n";
     cout << "Custom Orbit Sampler: ";
-    if(Default.Sampler)
+    if(Default.Set.Sampler)
         cout << "Point Sampler On\n";
     else
         cout << "Point Sampler Off\n";
     cout << "Orbital Axis Specification: ";//This name might change//
-    if(Default.Axis)
+    if(Default.Set.Axis)
         cout  << "On\n";
     else
         cout << "Off\n";
     cout << "Argument of Perihelion Specification: ";
-    if(Default.Perihelion)
+    if(Default.Set.Perihelion)
         cout << "On\n";
     else
         cout << "Off\n";
     cout << "Orbital Body Specification: ";
-    if(Default.Body)
+    if(Default.Set.Body)
         cout << "On\n";
     else
         cout << "Off\n";
     cout << "////////////////////////////////////////////////////////////////" << endl;    
 }
 
-void print_settings(){
+void Generator::print_settings(){
     cout << "Default Settings:" << endl;
     print_User_Settings();
     cout << "/////////////////Default Mass Settings//////////////////////////" << endl;
-    cout << "Number of decimal places: " << MassDefault.Decimal << endl;
-    cout << "Maximum number value to be multiplied by a power of 10 (scaled): " << MassDefault.Max << endl;
-    cout << "Minimum number value to scaled: " << MassDefault.Min << endl;
-    cout << "Maximum power number to scale by: " << MassDefault.Powermax << endl;
-    cout << "Minimum power number to scale by: " << MassDefault.Powermin << endl;
+    cout << "Number of decimal places: " << Default.Mass_Val.Decimal << endl;
+    cout << "Maximum number value to be multiplied by a power of 10 (scaled): " << Default.Mass_Val.Max << endl;
+    cout << "Minimum number value to scaled: " << Default.Mass_Val.Min << endl;
+    cout << "Maximum power number to scale by: " << Default.Mass_Val.Powermax << endl;
+    cout << "Minimum power number to scale by: " << Default.Mass_Val.Powermin << endl;
     cout << "////////////////////////////////////////////////////////////////" << endl;
     cout << "/////////////////Default Position Settings//////////////////////" << endl;
-    cout << "Decimal places for X coordinate: " << Pos_Def.Decimalx << " Y Coordinate: " << Pos_Def.Decimaly << " Z Coordinate: " << Pos_Def.Decimalz << endl;
-    cout << "Max value to be scaled for X, Y, and Z: " << Pos_Def.Maxx << ", " << Pos_Def.Maxy << ", and " << Pos_Def.Maxz << endl;
-    cout << "Min value to be scaled for X, Y, and Z: " << Pos_Def.Minx << ", " << Pos_Def.Miny << ", and " << Pos_Def.Minz << endl;
-    cout << "Max power number to scale by for X, Y, and Z: " << Pos_Def.Powerxmax << ", " << Pos_Def.Powerymax << ", and " << Pos_Def.Powerzmax << endl;
-    cout << "Min power number to scale by for X, Y, and Z: " << Pos_Def.Powerxmin << ", " << Pos_Def.Powerymin << ", and " << Pos_Def.Powerzmin << endl;
+    cout << "Decimal places for X coordinate: " << Default.Pos_Val.Decimalx << " Y Coordinate: " << Default.Pos_Val.Decimaly << " Z Coordinate: " << Default.Pos_Val.Decimalz << endl;
+    cout << "Max value to be scaled for X, Y, and Z: " << Default.Pos_Val.Maxx << ", " << Default.Pos_Val.Maxy << ", and " << Default.Pos_Val.Maxz << endl;
+    cout << "Min value to be scaled for X, Y, and Z: " << Default.Pos_Val.Minx << ", " << Default.Pos_Val.Miny << ", and " << Default.Pos_Val.Minz << endl;
+    cout << "Max power number to scale by for X, Y, and Z: " << Default.Pos_Val.Powerxmax << ", " << Default.Pos_Val.Powerymax << ", and " << Default.Pos_Val.Powerzmax << endl;
+    cout << "Min power number to scale by for X, Y, and Z: " << Default.Pos_Val.Powerxmin << ", " << Default.Pos_Val.Powerymin << ", and " << Default.Pos_Val.Powerzmin << endl;
     cout << "X Coordinate Sign: ";
-    if(Pos_Def.X == Yes)
+    if(Default.Pos_Val.X == Yes)
         cout << "Positive" << endl;
-    else if(Pos_Def.X == No)
+    else if(Default.Pos_Val.X == No)
         cout << "Negative" << endl;
     else
         cout << "Random" << endl;
     cout << "Y Coordinate Sign: ";
-    if(Pos_Def.Y == Yes)
+    if(Default.Pos_Val.Y == Yes)
         cout << "Positive" << endl;
-    else if(Pos_Def.Y == No)
+    else if(Default.Pos_Val.Y == No)
         cout << "Negative" << endl;
     else
         cout << "Random" << endl;    
     cout << "Z Coordinate Sign: ";
-    if(Pos_Def.Z == Yes)
+    if(Default.Pos_Val.Z == Yes)
         cout << "Positive" << endl;
-    else if(Pos_Def.Z == No)
+    else if(Default.Pos_Val.Z == No)
         cout << "Negative" << endl;
     else
         cout << "Random" << endl;
     cout << "////////////////////////////////////////////////////////////////" << endl;
     cout << "///////////////////Default Radius Settings//////////////////////" << endl;
-    cout << "Number of decimal places: " << Rad_Def.Decimal << endl;
-    cout << "Max value to be scaled: " << Rad_Def.Max << endl;
-    cout << "Min value to be scaled: " << Rad_Def.Min << endl;
-    cout << "Max power number to scale by: " << Rad_Def.Powermax << endl;
-    cout << "Min power number to scale by: " << Rad_Def.Powermin << endl;
+    cout << "Number of decimal places: " << Default.Rad_Val.Decimal << endl;
+    cout << "Max value to be scaled: " << Default.Rad_Val.Max << endl;
+    cout << "Min value to be scaled: " << Default.Rad_Val.Min << endl;
+    cout << "Max power number to scale by: " << Default.Rad_Val.Powermax << endl;
+    cout << "Min power number to scale by: " << Default.Rad_Val.Powermin << endl;
     cout << "////////////////////////////////////////////////////////////////" << endl;
     cout << "///////////////Default Eccentricity Settings////////////////////" << endl;
-    cout << "Number of decimal places (if less than 2): " << Ecc_Dec_Def << endl;
-    cout << "Eccentricity Integer Range (0-0,1, or 2): 0-" << Ecc_Range_Def << endl;
+    cout << "Number of decimal places (if less than 2): " << Default.Ecc_Dec << endl;
+    cout << "Eccentricity Integer Range (0-0,1, or 2): 0-" << Default.Ecc_Range << endl;
     cout << "////////////////////////////////////////////////////////////////" << endl;
     cout << "///////////////////////Extra Settings///////////////////////////" << endl;
-    cout << "Default Axis of Orbital Rotation: " << Axis_Def << endl;
-    cout << "Default Body Being Orbited: " << Body_Def << endl;  
+    cout << "Default Axis of Orbital Rotation: " << Default.Axis << endl;
+    cout << "Default Body Being Orbited: " << Default.Orbit << endl;  
 }
 
-void Set_Settings(bool Def){//Change the Default Settings//
+void Generator::Set_Settings(bool Def){//Change the Default Settings//
     string Answer;
     while(true){
         cout << "Which setting would you like to change.(Axis, Body,  Perihelion, IMass, IPosition, IRadius, IEccentric, Sampler). Enter 'done' if finished." << endl;
@@ -217,15 +221,15 @@ void Set_Settings(bool Def){//Change the Default Settings//
             Answer = yes_no();
             if(Def){
                 if(Answer == "yes")
-                    Default.Axis = true;
+                    Default.Set.Axis = true;
                 else
-                    Default.Axis = false;
+                    Default.Set.Axis = false;
             }
             else{
                 if(Answer == "yes")
-                    Set.Axis = true;
+                    Active.Set.Axis = true;
                 else
-                    Set.Axis = false;
+                    Active.Set.Axis = false;
             }
         }
         else if(Answer == "body"){
@@ -233,15 +237,15 @@ void Set_Settings(bool Def){//Change the Default Settings//
             Answer = yes_no();
             if(Def){
                 if(Answer == "yes")
-                    Default.Body = true;
+                    Default.Set.Body = true;
                 else
-                    Default.Body = false;                 
+                    Default.Set.Body = false;                 
             }
             else{
                 if(Answer == "yes")
-                    Set.Body = true;
+                    Active.Set.Body = true;
                 else
-                    Set.Body = false;
+                    Active.Set.Body = false;
             }
         }
         else if(Answer == "perihelion"){
@@ -249,15 +253,15 @@ void Set_Settings(bool Def){//Change the Default Settings//
             Answer = yes_no();
             if(Def){
                 if(Answer == "yes")
-                    Default.Perihelion = true;
+                    Default.Set.Perihelion = true;
                 else
-                    Default.Perihelion = false;                 
+                    Default.Set.Perihelion = false;                 
             }
             else{
                 if(Answer == "yes")
-                    Set.Perihelion = true;
+                    Active.Set.Perihelion = true;
                 else
-                    Set.Perihelion = false;
+                    Active.Set.Perihelion = false;
             }
         }
         else if(Answer == "imass"){
@@ -273,19 +277,19 @@ void Set_Settings(bool Def){//Change the Default Settings//
             }
             if(Def){
                 if(Answer == "fully")
-                    Default.IMass = Full;
+                    Default.Set.IMass = Full;
                 if(Answer == "partially")
-                    Default.IMass = Partial;
+                    Default.Set.IMass = Partial;
                 if(Answer == "default")
-                    Default.IMass == Zero;                
+                    Default.Set.IMass == Zero;                
             }
             else{
                 if(Answer == "fully")
-                    Set.IMass = Full;
+                    Active.Set.IMass = Full;
                 if(Answer == "partially")
-                    Set.IMass = Partial;
+                    Active.Set.IMass = Partial;
                 if(Answer == "default")
-                    Set.IMass == Zero;
+                    Active.Set.IMass == Zero;
             }
         }
         else if(Answer == "iposition"){
@@ -301,19 +305,19 @@ void Set_Settings(bool Def){//Change the Default Settings//
             }
             if(Def){
                 if(Answer == "fully")
-                    Default.IPosition = Full;
+                    Default.Set.IPosition = Full;
                 if(Answer == "partially")
-                    Default.IPosition = Partial;
+                    Default.Set.IPosition = Partial;
                 if(Answer == "default")
-                    Default.IPosition == Zero;                 
+                    Default.Set.IPosition == Zero;                 
             }
             else{
                 if(Answer == "fully")
-                    Set.IPosition = Full;
+                    Active.Set.IPosition = Full;
                 if(Answer == "partially")
-                    Set.IPosition = Partial;
+                    Active.Set.IPosition = Partial;
                 if(Answer == "default")
-                    Set.IPosition == Zero;
+                    Active.Set.IPosition == Zero;
             }
         }
         else if(Answer == "iradius"){
@@ -329,19 +333,19 @@ void Set_Settings(bool Def){//Change the Default Settings//
             }
             if(Def){
                 if(Answer == "fully")
-                    Default.IRadius = Full;
+                    Default.Set.IRadius = Full;
                 if(Answer == "partially")
-                    Default.IRadius = Partial;
+                    Default.Set.IRadius = Partial;
                 if(Answer == "default")
-                    Default.IRadius == Zero;                 
+                    Default.Set.IRadius == Zero;                 
             }
             else{
                 if(Answer == "fully")
-                    Set.IRadius = Full;
+                    Active.Set.IRadius = Full;
                 if(Answer == "partially")
-                    Set.IRadius = Partial;
+                    Active.Set.IRadius = Partial;
                 if(Answer == "default")
-                    Set.IRadius == Zero;
+                    Active.Set.IRadius == Zero;
             }
         }
         else if(Answer == "ieccentric"){
@@ -356,54 +360,54 @@ void Set_Settings(bool Def){//Change the Default Settings//
                 cout << "Error, invalid input. (Fully, Partially, Default)" << endl;
             }
             if(Def){
-                Default.Sampler = false;
+                Default.Set.Sampler = false;
                 if(Answer == "fully")
-                    Default.IEccentric = Full;
+                    Default.Set.IEccentric = Full;
                 if(Answer == "partially")
-                    Default.IEccentric = Partial;
+                    Default.Set.IEccentric = Partial;
                 if(Answer == "default")
-                    Default.IEccentric == Zero;                 
+                    Default.Set.IEccentric == Zero;                 
             }
             else{
-                Set.Sampler = false;
+                Active.Set.Sampler = false;
                 if(Answer == "fully")
-                    Set.IEccentric = Full;
+                    Active.Set.IEccentric = Full;
                 if(Answer == "partially")
-                    Set.IEccentric = Partial;
+                    Active.Set.IEccentric = Partial;
                 if(Answer == "default")
-                    Set.IEccentric == Zero;
+                    Active.Set.IEccentric == Zero;
             }
         }
         else{
             cout << "Would you like to input your own sample points for the object's orbit to pass through (or come as close as possible to passing through)? (Yes/No)" << endl;
             Answer = yes_no();
             if(Def){
-                Default.IEccentric = Zero;
+                Default.Set.IEccentric = Zero;
                 if(Answer == "yes")
-                    Default.Sampler = true;
+                    Default.Set.Sampler = true;
                 else
-                    Default.Sampler = false;                
+                    Default.Set.Sampler = false;                
             }
             else{
-                Set.IEccentric = Zero;
+                Active.Set.IEccentric = Zero;
                 if(Answer == "yes")
-                    Set.Sampler = true;
+                    Active.Set.Sampler = true;
                 else
-                    Set.Sampler = false;
+                    Active.Set.Sampler = false;
             }
         }
     }    
 }
 
-void Set_Body(bool Def){
+void Generator::Set_Body(bool Def){
     cout << "Enter the name of the Celestial Body being orbited" << endl;
     if(Def)
-        cin >> Body_Def;
+        cin >> Default.Orbit;
     else
-        cin >> Orbit;        
+        cin >> Active.Orbit;        
 }
 
-void Set_Axis(bool Def){
+void Generator::Set_Axis(bool Def){
     string A;
     cout << "Set an axis of rotation for the angle of inclination. (X, Y, Z)" << endl;
     while(true){
@@ -412,16 +416,16 @@ void Set_Axis(bool Def){
         if(A == "x" || A == "y" || A == "z"){
             A[0] = toupper(A[0]);
             if(Def)
-                Axis_Def = A[0];
+                Default.Axis = A[0];
             else
-                Axis = A[0];
+                Active.Axis = A[0];
             break;
         }
         cout << "Error. Invalid input" << endl;
     }    
 }
 
-void Set_Eccentric(bool Def){
+void Generator::Set_Eccentric(bool Def){
     string Answer;
     cout << "Enter the value range for the eccentricity to fall under. 0 to 0, 0 to 1, or 0 to 2 (Enter 0, 1, or 2)" << endl;                
     while(true){
@@ -431,9 +435,9 @@ void Set_Eccentric(bool Def){
         cout << "Error, please enter 0, 1, or 2." << endl;
     }
     if(Def)
-        Ecc_Range_Def = (int)convert(Answer);
+        Default.Ecc_Range = (int)convert(Answer);
     else
-        Ecc_Range = (int)convert(Answer);
+        Active.Ecc_Range = (int)convert(Answer);
     cout << "Enter a value specifying the number of decimal places the Eccentricity will have." << endl;
     while(true){
         Answer = verify_pointdouble();
@@ -443,9 +447,9 @@ void Set_Eccentric(bool Def){
             double Test = convert(Answer);
             if(Test - (int)Test == 0 && 0 <= convert(Answer)){
                 if(Def)
-                    Ecc_Dec_Def = Test;
+                    Default.Ecc_Dec = Test;
                 else
-                    Ecc_Dec = Test;
+                    Active.Ecc_Dec = Test;
                 break;
             }
             cout << "Error, please enter a positive integer value." << endl;
@@ -453,7 +457,7 @@ void Set_Eccentric(bool Def){
     }    
 }
 
-void Set_Radius(bool Def){
+void Generator::Set_Radius(bool Def){
     string Answer;
     while(true){
         cout << "What parameters would you like to specify? (ValMax, ValMin, PowerMax, PowerMin, Decimal) Enter 'done' when finished." << endl;
@@ -485,37 +489,37 @@ void Set_Radius(bool Def){
             }
         }
         if(Def){
-            if(Answer == "Valmax" && Rad_Def.Min <= Result)
-                Rad_Def.Max = Result;
-            else if(Answer == "Valmin" && Result <= Rad_Def.Max)
-                Rad_Def.Min = Result;
-            else if(Answer == "Powermax" && Rad_Def.Powermin <= Result)
-                Rad_Def.Powermax = Result;
-            else if(Answer == "Powermin" && Result <= Rad_Def.Powermax)
-                Rad_Def.Powermin = Result;
+            if(Answer == "Valmax" && Default.Rad_Val.Min <= Result)
+                Default.Rad_Val.Max = Result;
+            else if(Answer == "Valmin" && Result <= Default.Rad_Val.Max)
+                Default.Rad_Val.Min = Result;
+            else if(Answer == "Powermax" && Default.Rad_Val.Powermin <= Result)
+                Default.Rad_Val.Powermax = Result;
+            else if(Answer == "Powermin" && Result <= Default.Rad_Val.Powermax)
+                Default.Rad_Val.Powermin = Result;
             else if(Answer == "Decimal")
-                Rad_Def.Decimal = Result;
+                Default.Rad_Val.Decimal = Result;
             else
                 cout << "Error, mins and maxes don't make sense (eg. max might be less than min)" << endl;           
         }
         else{
-            if(Answer == "Valmax" && Rad_Val.Min <= Result)
-                Rad_Val.Max = Result;
-            else if(Answer == "Valmin" && Result <= Rad_Val.Max)
-                Rad_Val.Min = Result;
-            else if(Answer == "Powermax" && Rad_Val.Powermin <= Result)
-                Rad_Val.Powermax = Result;
-            else if(Answer == "Powermin" && Result <= Rad_Val.Powermax)
-                Rad_Val.Powermin = Result;
+            if(Answer == "Valmax" && Active.Rad_Val.Min <= Result)
+                Active.Rad_Val.Max = Result;
+            else if(Answer == "Valmin" && Result <= Active.Rad_Val.Max)
+                Active.Rad_Val.Min = Result;
+            else if(Answer == "Powermax" && Active.Rad_Val.Powermin <= Result)
+                Active.Rad_Val.Powermax = Result;
+            else if(Answer == "Powermin" && Result <= Active.Rad_Val.Powermax)
+                Active.Rad_Val.Powermin = Result;
             else if(Answer == "Decimal")
-                Rad_Val.Decimal = Result;
+                Active.Rad_Val.Decimal = Result;
             else
                 cout << "Error, mins and maxes don't make sense (eg. max might be less than min)" << endl;
         }
     }    
 }
 
-void Set_Position(bool Def){
+void Generator::Set_Position(bool Def){
     string Answer;
     while(true){
         cout << "What parameter would you like to specify? (Decimal, Val, Power, Sign)" << endl;
@@ -560,34 +564,34 @@ void Set_Position(bool Def){
                     }
                 }
                 if(Def){
-                    if(Answer == "Maxx" && Pos_Def.Minx <= Result)
-                        Pos_Def.Maxx = Result;
-                    else if(Answer == "Maxy" && Pos_Def.Miny <= Result)
-                        Pos_Def.Maxy = Result;
-                    else if(Answer == "Maxz" && Pos_Def.Minz <= Result)    
-                        Pos_Def.Maxz = Result;
-                    else if(Answer == "Minx" && Result <= Pos_Def.Maxx)
-                        Pos_Def.Minx = Result;
-                    else if(Answer == "Miny" && Result <= Pos_Def.Maxy)
-                        Pos_Def.Miny = Result;
-                    else if(Answer == "Minz" && Result <= Pos_Def.Maxz)
-                        Pos_Def.Minz = Result;
+                    if(Answer == "Maxx" && Default.Pos_Val.Minx <= Result)
+                        Default.Pos_Val.Maxx = Result;
+                    else if(Answer == "Maxy" && Default.Pos_Val.Miny <= Result)
+                        Default.Pos_Val.Maxy = Result;
+                    else if(Answer == "Maxz" && Default.Pos_Val.Minz <= Result)    
+                        Default.Pos_Val.Maxz = Result;
+                    else if(Answer == "Minx" && Result <= Default.Pos_Val.Maxx)
+                        Default.Pos_Val.Minx = Result;
+                    else if(Answer == "Miny" && Result <= Default.Pos_Val.Maxy)
+                        Default.Pos_Val.Miny = Result;
+                    else if(Answer == "Minz" && Result <= Default.Pos_Val.Maxz)
+                        Default.Pos_Val.Minz = Result;
                     else
                     cout << "Error, mins and maxes don't make sense (eg. max might be less than min)" << endl;
                 }
                 else{
-                    if(Answer == "Maxx" && Pos_Val.Minx <= Result)
-                        Pos_Val.Maxx = Result;
-                    else if(Answer == "Maxy" && Pos_Val.Miny <= Result)
-                        Pos_Val.Maxy = Result;
-                    else if(Answer == "Maxz" && Pos_Val.Minz <= Result)    
-                        Pos_Val.Maxz = Result;
-                    else if(Answer == "Minx" && Result <= Pos_Val.Maxx)
-                        Pos_Val.Minx = Result;
-                    else if(Answer == "Miny" && Result <= Pos_Val.Maxy)
-                        Pos_Val.Miny = Result;
-                    else if(Answer == "Minz" && Result <= Pos_Val.Maxz)
-                        Pos_Val.Minz = Result;
+                    if(Answer == "Maxx" && Active.Pos_Val.Minx <= Result)
+                        Active.Pos_Val.Maxx = Result;
+                    else if(Answer == "Maxy" && Active.Pos_Val.Miny <= Result)
+                        Active.Pos_Val.Maxy = Result;
+                    else if(Answer == "Maxz" && Active.Pos_Val.Minz <= Result)    
+                        Active.Pos_Val.Maxz = Result;
+                    else if(Answer == "Minx" && Result <= Active.Pos_Val.Maxx)
+                        Active.Pos_Val.Minx = Result;
+                    else if(Answer == "Miny" && Result <= Active.Pos_Val.Maxy)
+                        Active.Pos_Val.Miny = Result;
+                    else if(Answer == "Minz" && Result <= Active.Pos_Val.Maxz)
+                        Active.Pos_Val.Minz = Result;
                     else
                     cout << "Error, mins and maxes don't make sense (eg. max might be less than min)" << endl;
                 }
@@ -624,34 +628,34 @@ void Set_Position(bool Def){
                     }
                 }
                 if(Def){
-                    if(Answer == "Maxx" && Pos_Def.Powerxmin <= Result)
-                        Pos_Def.Powerxmax = Result;
-                    else if(Answer == "Maxy" && Pos_Def.Powerymin <= Result)
-                        Pos_Def.Powerymax = Result;
-                    else if(Answer == "Maxz" && Pos_Def.Powerzmin <= Result)    
-                        Pos_Def.Powerzmax = Result;
-                    else if(Answer == "Minx" && Result <= Pos_Def.Powerxmax)
-                        Pos_Def.Powerxmin = Result;
-                    else if(Answer == "Miny" && Result <= Pos_Def.Powerymax)
-                        Pos_Def.Powerymin = Result;
-                    else if(Answer == "Minz" && Result <= Pos_Def.Powerzmax)
-                        Pos_Def.Powerzmin = Result;
+                    if(Answer == "Maxx" && Default.Pos_Val.Powerxmin <= Result)
+                        Default.Pos_Val.Powerxmax = Result;
+                    else if(Answer == "Maxy" && Default.Pos_Val.Powerymin <= Result)
+                        Default.Pos_Val.Powerymax = Result;
+                    else if(Answer == "Maxz" && Default.Pos_Val.Powerzmin <= Result)    
+                        Default.Pos_Val.Powerzmax = Result;
+                    else if(Answer == "Minx" && Result <= Default.Pos_Val.Powerxmax)
+                        Default.Pos_Val.Powerxmin = Result;
+                    else if(Answer == "Miny" && Result <= Default.Pos_Val.Powerymax)
+                        Default.Pos_Val.Powerymin = Result;
+                    else if(Answer == "Minz" && Result <= Default.Pos_Val.Powerzmax)
+                        Default.Pos_Val.Powerzmin = Result;
                     else
                     cout << "Error, mins and maxes don't make sense (eg. max might be less than min)" << endl;                     
                 }
                 else{
-                    if(Answer == "Maxx" && Pos_Val.Powerxmin <= Result)
-                        Pos_Val.Powerxmax = Result;
-                    else if(Answer == "Maxy" && Pos_Val.Powerymin <= Result)
-                        Pos_Val.Powerymax = Result;
-                    else if(Answer == "Maxz" && Pos_Val.Powerzmin <= Result)    
-                        Pos_Val.Powerzmax = Result;
-                    else if(Answer == "Minx" && Result <= Pos_Val.Powerxmax)
-                        Pos_Val.Powerxmin = Result;
-                    else if(Answer == "Miny" && Result <= Pos_Val.Powerymax)
-                        Pos_Val.Powerymin = Result;
-                    else if(Answer == "Minz" && Result <= Pos_Val.Powerzmax)
-                        Pos_Val.Powerzmin = Result;
+                    if(Answer == "Maxx" && Active.Pos_Val.Powerxmin <= Result)
+                        Active.Pos_Val.Powerxmax = Result;
+                    else if(Answer == "Maxy" && Active.Pos_Val.Powerymin <= Result)
+                        Active.Pos_Val.Powerymax = Result;
+                    else if(Answer == "Maxz" && Active.Pos_Val.Powerzmin <= Result)    
+                        Active.Pos_Val.Powerzmax = Result;
+                    else if(Answer == "Minx" && Result <= Active.Pos_Val.Powerxmax)
+                        Active.Pos_Val.Powerxmin = Result;
+                    else if(Answer == "Miny" && Result <= Active.Pos_Val.Powerymax)
+                        Active.Pos_Val.Powerymin = Result;
+                    else if(Answer == "Minz" && Result <= Active.Pos_Val.Powerzmax)
+                        Active.Pos_Val.Powerzmin = Result;
                     else
                     cout << "Error, mins and maxes don't make sense (eg. max might be less than min)" << endl; 
                 }
@@ -689,19 +693,19 @@ void Set_Position(bool Def){
                 }
                 if(Def){
                     if(Answer == "Decimalx")
-                        Pos_Def.Decimalx = Result;
+                        Default.Pos_Val.Decimalx = Result;
                     if(Answer == "Decimaly")
-                        Pos_Def.Decimaly = Result;
+                        Default.Pos_Val.Decimaly = Result;
                     if(Answer == "Decimalz")    
-                        Pos_Def.Decimalz = Result;                     
+                        Default.Pos_Val.Decimalz = Result;                     
                 }
                 else{
                     if(Answer == "Decimalx")
-                        Pos_Val.Decimalx = Result;
+                        Active.Pos_Val.Decimalx = Result;
                     if(Answer == "Decimaly")
-                        Pos_Val.Decimaly = Result;
+                        Active.Pos_Val.Decimaly = Result;
                     if(Answer == "Decimalz")    
-                        Pos_Val.Decimalz = Result;
+                        Active.Pos_Val.Decimalz = Result;
                 }
             }
         }
@@ -730,53 +734,53 @@ void Set_Position(bool Def){
                 if(Def){
                     if(Answer == "signx"){
                         if(Ans == "yes")
-                            Pos_Def.X = Yes;
+                            Default.Pos_Val.X = Yes;
                         else if(Ans == "no")
-                            Pos_Def.X = No;
+                            Default.Pos_Val.X = No;
                         else
-                            Pos_Def.X = Maybe;
+                            Default.Pos_Val.X = Maybe;
                     }
                     else if(Answer == "signy"){
                         if(Ans == "yes")
-                            Pos_Def.Y = Yes;
+                            Default.Pos_Val.Y = Yes;
                         else if(Ans == "no")
-                            Pos_Def.Y = No;
+                            Default.Pos_Val.Y = No;
                         else
-                            Pos_Def.Y = Maybe;
+                            Default.Pos_Val.Y = Maybe;
                     }
                     else{
                         if(Ans == "yes")
-                            Pos_Def.Z = Yes;
+                            Default.Pos_Val.Z = Yes;
                         else if(Ans == "no")
-                            Pos_Def.Z = No;
+                            Default.Pos_Val.Z = No;
                         else
-                            Pos_Def.Z = Maybe;
+                            Default.Pos_Val.Z = Maybe;
                     }                    
                 }
                 else{
                     if(Answer == "signx"){
                         if(Ans == "yes")
-                            Pos_Val.X = Yes;
+                            Active.Pos_Val.X = Yes;
                         else if(Ans == "no")
-                            Pos_Val.X = No;
+                            Active.Pos_Val.X = No;
                         else
-                            Pos_Val.X = Maybe;
+                            Active.Pos_Val.X = Maybe;
                     }
                     else if(Answer == "signy"){
                         if(Ans == "yes")
-                            Pos_Val.Y = Yes;
+                            Active.Pos_Val.Y = Yes;
                         else if(Ans == "no")
-                            Pos_Val.Y = No;
+                            Active.Pos_Val.Y = No;
                         else
-                            Pos_Val.Y = Maybe;
+                            Active.Pos_Val.Y = Maybe;
                     }
                     else{
                         if(Ans == "yes")
-                            Pos_Val.Z = Yes;
+                            Active.Pos_Val.Z = Yes;
                         else if(Ans == "no")
-                            Pos_Val.Z = No;
+                            Active.Pos_Val.Z = No;
                         else
-                            Pos_Val.Z = Maybe;
+                            Active.Pos_Val.Z = Maybe;
                     }
                 }
             }                        
@@ -784,7 +788,7 @@ void Set_Position(bool Def){
     }    
 }
 
-void Set_Mass(bool Def){
+void Generator::Set_Mass(bool Def){
     string Answer;
     while(true){
         cout << "What parameters would you like to specify? (ValMax, ValMin, PowerMax, PowerMin, Decimal) Enter 'done' when finished." << endl;
@@ -817,30 +821,30 @@ void Set_Mass(bool Def){
             }
         }
         if(Def){
-            if(Answer == "Valmax" && MassDefault.Min <= Result)
-                MassDefault.Max = Result;
-            else if(Answer == "Valmin" && Result <= MassDefault.Max)
-                MassDefault.Min = Result;
-            else if(Answer == "Powermax" && MassDefault.Powermin <= Result)
-                MassDefault.Powermax = Result;
-            else if(Answer == "Powermin" && Result <= MassDefault.Powermax)
-                MassDefault.Powermin = Result;
+            if(Answer == "Valmax" && Default.Mass_Val.Min <= Result)
+                Default.Mass_Val.Max = Result;
+            else if(Answer == "Valmin" && Result <= Default.Mass_Val.Max)
+                Default.Mass_Val.Min = Result;
+            else if(Answer == "Powermax" && Default.Mass_Val.Powermin <= Result)
+                Default.Mass_Val.Powermax = Result;
+            else if(Answer == "Powermin" && Result <= Default.Mass_Val.Powermax)
+                Default.Mass_Val.Powermin = Result;
             else if(Answer == "Decimal")
-                MassDefault.Decimal = Result;
+                Default.Mass_Val.Decimal = Result;
             else
                 cout << "Error, mins and maxes don't make sense (eg. max might be less than min)" << endl;
         }
         else{
-            if(Answer == "Valmax" && Mass_Val.Min <= Result)
-                Mass_Val.Max = Result;
-            else if(Answer == "Valmin" && Result <= Mass_Val.Max)
-                Mass_Val.Min = Result;
-            else if(Answer == "Powermax" && Mass_Val.Powermin <= Result)
-                Mass_Val.Powermax = Result;
-            else if(Answer == "Powermin" && Result <= Mass_Val.Powermax)
-                Mass_Val.Powermin = Result;
+            if(Answer == "Valmax" && Active.Mass_Val.Min <= Result)
+                Active.Mass_Val.Max = Result;
+            else if(Answer == "Valmin" && Result <= Active.Mass_Val.Max)
+                Active.Mass_Val.Min = Result;
+            else if(Answer == "Powermax" && Active.Mass_Val.Powermin <= Result)
+                Active.Mass_Val.Powermax = Result;
+            else if(Answer == "Powermin" && Result <= Active.Mass_Val.Powermax)
+                Active.Mass_Val.Powermin = Result;
             else if(Answer == "Decimal")
-                Mass_Val.Decimal = Result;
+                Active.Mass_Val.Decimal = Result;
             else
                 cout << "Error, mins and maxes don't make sense (eg. max might be less than min)" << endl;
         }

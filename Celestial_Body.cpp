@@ -19,13 +19,8 @@ Celestial_Body::Celestial_Body(const string Name, const float Mass, const Attrib
     this->Name = Name;
     this->Mass = Mass;
     this->Radius = Radius;
+    Values = Cel;
     Values.ID = celestialptr->SpaceCount;
-    Values.Rx = Cel.Rx;
-    Values.Ry = Cel.Ry;
-    Values.Rz = Cel.Rz;
-    Values.Vx = Cel.Vx;
-    Values.Vy = Cel.Vy;
-    Values.Vz = Cel.Vz;
     Status = "Intact";
     Celestial_Vec = celestialptr;
 }
@@ -79,7 +74,7 @@ void Celestial_Body::update_attributes(){
     }
 }
 
-//Sets Gets//
+//Some Gets//
 Attributes Celestial_Body::get_attributes(){
     return Values;
 }
@@ -235,31 +230,12 @@ vector<Attributes>& operator*(const double C, vector<Attributes> &One){
 void Celestial_Body::Simulate_Motion(double Time,double h,double hmax,double hmin, double e){
 vector<Attributes> K1, K1Copy, K2, K2Copy, K3, K3Copy, K4, K4Copy, K5, K5Copy, K6, Input, Result, Correction;
 vector<Attributes> Tracker = Celestial_Vec->ObjectTracker;
-double c[24];
-c[0] = 0.25;
-c[1] = 3.0/32.0;
-c[2] = 9.0/32.0;
-c[3] = 1932.0/2197.0;
-c[4]= 7200.0/2197.0;
-c[5] = 7296.0/2197.0;
-c[6] = 439.0/216.0;
-c[7] = 8.0;
-c[8] = 3680.0/513.0;
-c[9] = 845.0/4104.0;
-c[10] = 8.0/27.0;
-c[11] = 2.0;
-c[12] = 3544.0/2565.0;
-c[13] = 1859.0/4104.0;
-c[14] = 11.0/40.0;
-c[15] = 25.0/216.0;
-c[16] = 1408.0/2565.0;
-c[17] = 2197.0/4104.0;
-c[18] = 0.2;          
-c[19] = 16.0/135.0;
-c[20] = 6656.0/12825.0;
-c[21] = 28561.0/56430.0;
-c[22] = 9.0/50.0;
-c[23] = 2.0/55.0; 
+double c[24]; c[0] = 0.25; c[1] = 3.0/32.0; c[2] = 9.0/32.0; c[3] = 1932.0/2197.0;
+c[4]= 7200.0/2197.0; c[5] = 7296.0/2197.0; c[6] = 439.0/216.0; c[7] = 8.0;
+c[8] = 3680.0/513.0; c[9] = 845.0/4104.0; c[10] = 8.0/27.0; c[11] = 2.0;
+c[12] = 3544.0/2565.0; c[13] = 1859.0/4104.0; c[14] = 11.0/40.0; c[15] = 25.0/216.0;
+c[16] = 1408.0/2565.0; c[17] = 2197.0/4104.0; c[18] = 0.2; c[19] = 16.0/135.0;
+c[20] = 6656.0/12825.0; c[21] = 28561.0/56430.0; c[22] = 9.0/50.0; c[23] = 2.0/55.0; 
 double R, D;
 double hnext;
 bool Trigger;
@@ -275,7 +251,7 @@ cout << endl;
 double t = 0.0;
 cout << "Simulating..." << endl;
 is_collision(t, Tracker);//Check to see if any object starts inside another object//
-Initialize_Sim(K1, K1Copy, K2, K2Copy, K3, K3Copy, K4, K4Copy, K5, K5Copy, K6, Input, Result, Correction, Tracker);
+Initialize_Sim(K1, K1Copy, K2, K2Copy, K3, K3Copy, K4, K4Copy, K5, K5Copy, K6, Input, Result, Correction, Tracker);//Initialize Simulation Vectors//
 
 //Simulation Loop//
 while(t<Time){//This code cannot be parallelized//

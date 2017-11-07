@@ -21,77 +21,7 @@
 
 using namespace std;
 
-//Forward Declarations//
-float Gen_Mass(float*);
-float Gen_Radius();
-float Gen_Eccent();
-int Gen_Position(vector<CelestialPtr>&, float, double*, double*);
-void Specify_Path(vector<double*>&, double*, float*, float, float&, double&);
-int Point_Sampler(vector<double*>&, float*, float*);
-float get_rotation(char, double*);
-void Rotate(double*, const char, float);
-int Least_Squares(double*, double*, vector<double*>&, float);
-double SLRec_Calc(const float, const double*, const float);
-float get_theta(double, double, double);
-bool Verify_Mass(float*, float*);
-
-//Settings//
-Settings Set;
-iMass Mass_Val;
-iPosition Pos_Val;
-iRadius Rad_Val;
-int Ecc_Dec;
-int Ecc_Range;
-string Orbit;
-char Axis;
-
-//Default Values//
-Settings Default;
-iMass MassDefault;
-iPosition Pos_Def;
-iRadius Rad_Def;
-int Ecc_Dec_Def;
-int Ecc_Range_Def;
-char Axis_Def;
-string Body_Def;
-
-void Set_Defaults(){
-    print_settings();
-    cout << endl;
-    string Answer;
-    while(true){
-        cout << "Which default value would you like to change? (User, Mass, Position, Radius, Eccentricity, Axis, Body) Enter 'Print' to print the current settings and 'Done' when done" << endl;
-        while(true){
-        cin >> Answer;
-            Answer = str_lower(Answer);
-            if(Answer == "user" || Answer == "mass" || Answer == "position" || Answer == "radius" || Answer == "eccentricity" || Answer == "axis" || Answer == "body" || Answer == "print")
-                break;
-            if(Answer == "done")
-                break;
-            cout << "Error, invalid input." << endl;
-        }
-        if(Answer == "done")
-            break;
-        if(Answer == "user")
-            Set_Settings(true);
-        if(Answer == "mass")
-            Set_Mass(true);
-        if(Answer == "position")
-            Set_Position(true);
-        if(Answer == "radius")
-            Set_Radius(true);
-        if(Answer == "eccentricity")
-            Set_Eccentric(true);
-        if(Answer == "axis")
-            Set_Axis(true);
-        if(Answer == "body")
-            Set_Body(true);
-        if(Answer == "print")
-            print_settings();    
-    }
-}
-
-int Rand_Orbit_Gen(Attributes* Body, float &GenMass, float &GenRadius, vector<CelestialPtr> &Solar_Bodies, const string name){
+int Generator::Rand_Orbit_Gen(Attributes* Body, float &GenMass, float &GenRadius, vector<CelestialPtr> &Solar_Bodies, const string name){
     double Pos[3];
     double Vel[3];
     float Theta;
@@ -112,14 +42,12 @@ int Rand_Orbit_Gen(Attributes* Body, float &GenMass, float &GenRadius, vector<Ce
         string Answer;
         cout << "Would you like to use the default settings? Yes/No" << endl;
         Answer = yes_no();       
-        Set = Default;
+        Active = Default;
         if(Answer == "no")//Set Set//
             Set_Settings(false);
         
-        if(Set.Body)//Set Body
+        if(Active.Set.Body)//Set Body
             Set_Body(false);
-        else
-            Orbit = Body_Def;
         
         //Get the position of Celestial Body "Orbit"//
         Attributes V;
@@ -127,7 +55,7 @@ int Rand_Orbit_Gen(Attributes* Body, float &GenMass, float &GenRadius, vector<Ce
             bool Status = false;     
             for(CelestialPtr Celestial : Solar_Bodies){
                 V = Celestial->get_attributes();
-                if(Celestial->get_Name() == Orbit && Get_Status(Celestial) == "Intact"){
+                if(Celestial->get_Name() == Active.Orbit && Get_Status(Celestial) == "Intact"){
                     translate[0] = -V.Rx;
                     translate[1] = -V.Ry;
                     translate[2] = -V.Rz;
@@ -137,11 +65,11 @@ int Rand_Orbit_Gen(Attributes* Body, float &GenMass, float &GenRadius, vector<Ce
             }
             if(Status)
                 break;
-            cout << "\"" << Orbit 
+            cout << "\"" << Active.Orbit 
             << "\" was either destroyed in a simulation or never existed to begin with.\n Enter another"
             << " Celestial body for " << name << " to orbit around please. 'Cancel' to cancel" << endl;
-            cin >> Orbit;
-            if(str_lower(Orbit) == "cancel")
+            cin >> Active.Orbit;
+            if(str_lower(Active.Orbit) == "cancel")
                 return 1;
         }
         OrbMass = Solar_Bodies[V.ID]->get_Mass();//We'll need this mass value later. Assign it to a new variable before V(retrieved above) goes out of scope//
@@ -152,12 +80,10 @@ int Rand_Orbit_Gen(Attributes* Body, float &GenMass, float &GenRadius, vector<Ce
         OrbPos[1] = V.Ry;
         OrbPos[2] = V.Rz;
         
-        if(Set.Axis)//Set Axis
+        if(Active.Set.Axis)//Set Axis
             Set_Axis(false);
-        else
-            Axis = Axis_Def;
         
-        if(Set.Perihelion){
+        if(Active.Set.Perihelion){
             //Set Angle of Perihelion//
             cout << "Enter the angle (0 to 360 degrees) for the argument of perihelion." << endl;
             while(true){
@@ -177,7 +103,7 @@ int Rand_Orbit_Gen(Attributes* Body, float &GenMass, float &GenRadius, vector<Ce
             }
         }
         
-        if(Set.IEccentric == Full){
+        if(Active.Set.IEccentric == Full){
             //Set Eccentricity
             cout << "Set the eccentricity value. (0-2)" << endl;
             while(true){
@@ -193,13 +119,11 @@ int Rand_Orbit_Gen(Attributes* Body, float &GenMass, float &GenRadius, vector<Ce
             }
         }
         else{
-            Ecc_Range = Ecc_Range_Def;
-            Ecc_Dec = Ecc_Dec_Def;
-            if(Set.IEccentric == Partial)
+            if(Active.Set.IEccentric == Partial)
                 Set_Eccentric(false);
         }
         
-        if(Set.IRadius == Full){
+        if(Active.Set.IRadius == Full){
             //Set Radius
             cout << "Enter a new Radius value." << endl;            
             while(true){
@@ -212,16 +136,14 @@ int Rand_Orbit_Gen(Attributes* Body, float &GenMass, float &GenRadius, vector<Ce
                     ObjRadius = convert(Answer);
                     break;
                 }
-            }
-            
+            }            
         }
         else{
-            Rad_Val = Rad_Def;
-            if(Set.IRadius == Partial)
+            if(Active.Set.IRadius == Partial)
                 Set_Radius(false);
         }
         
-        if(Set.IPosition == Full){
+        if(Active.Set.IPosition == Full){
             //Set Position
             cout << "Enter the coordinates for an initial orbital point." << endl;
             cout << "Enter the x-coordinate" << endl;
@@ -256,12 +178,11 @@ int Rand_Orbit_Gen(Attributes* Body, float &GenMass, float &GenRadius, vector<Ce
             }    
         }
         else{
-            Pos_Val = Pos_Def;
-            if(Set.IPosition == Partial)
+            if(Active.Set.IPosition == Partial)
                 Set_Position(false);
         }             
         
-        if(Set.IMass == Full){
+        if(Active.Set.IMass == Full){
             //Set IMass
             float Value;
             cout << "Enter a new Mass value." << endl;            
@@ -282,26 +203,25 @@ int Rand_Orbit_Gen(Attributes* Body, float &GenMass, float &GenRadius, vector<Ce
             }
         }
         else{
-            Mass_Val = MassDefault;
-            if(Set.IMass == Partial)
+            if(Active.Set.IMass == Partial)
                 Set_Mass(false);                              
         }            
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     /////////////////////////////////////////RNG Block//////////////////////////////////////////////////
-        if(Set.IMass != Full){
+        if(Active.Set.IMass != Full){
             ObjMass = Gen_Mass(&OrbMass);
             if(ObjMass == -1)
                 return 1;
         }
-        if(Set.IRadius != Full)
+        if(Active.Set.IRadius != Full)
             ObjRadius = Gen_Radius();       
-        if(Set.IPosition != Full){
+        if(Active.Set.IPosition != Full){
             if(Gen_Position(Solar_Bodies, ObjRadius, Pos, OrbPos))
                 return 1;
         }
-        if(!Set.Perihelion)
+        if(!Active.Set.Perihelion)
             Perihelion = rand() % 360;
-        if(!Set.Sampler && Set.IEccentric != Full)    
+        if(!Active.Set.Sampler && Active.Set.IEccentric != Full)    
             Eccent = Gen_Eccent();        
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////Information Processing Block////////////////////////////////////  
@@ -311,22 +231,22 @@ int Rand_Orbit_Gen(Attributes* Body, float &GenMass, float &GenRadius, vector<Ce
         Pos[2] += translate[2];//z
 
         //Rotate Initial Position onto x-z(or whatever respective 2-D) plane, save the inverse transformation for later//
-        Theta = get_rotation(Axis, Pos);//HERE
-        Rotate(Pos, Axis, Theta);
+        Theta = get_rotation(Pos);//HERE
+        Rotate(Pos, Theta);
 
         //Translate into a 2-D "(x,y)" coordinate//
-        if(Axis == 'Z' || Axis == 'X'){//x-z plane to x-y coordinate
+        if(Active.Axis == 'Z' || Active.Axis == 'X'){//x-z plane to x-y coordinate
             P1[0] = Pos[0];
             P1[1] = -Pos[2];
         }
-        if(Axis == 'Y'){//x-y plane to x-y coordinate
+        if(Active.Axis == 'Y'){//x-y plane to x-y coordinate
             P1[0] = Pos[0];
             P1[1] = Pos[1];
         }
         
         //If necessary, apply Least Squares on specified points to obtain Eccentricity and Semi-Latus Rectum//
         float Peri = 2*pi*(Perihelion/360.0);   
-        if(Set.Sampler){
+        if(Active.Set.Sampler){
             Specify_Path(Points, P1, &Theta, Peri, Eccent, SLRec);
         }
         else{//Calculate Semi-Latus Rectum//
@@ -338,7 +258,7 @@ int Rand_Orbit_Gen(Attributes* Body, float &GenMass, float &GenRadius, vector<Ce
         if(0 < ((SLRec/(1+Eccent)) -  ObjRadius - Solar_Bodies[V.ID]->get_Radius()))//Might Have to Change//Will have to add onto this test later
             break;
         //If not, display Warning Message ... and Yes/No verification//
-        cout << "Warning: " << name << " will likely crash into " << Orbit << ". Are you fine with this? Yes/No (No will make you restart the Orbit Customizer.)" << endl;
+        cout << "Warning: " << name << " will likely crash into " << Active.Orbit << ". Are you fine with this? Yes/No (No will make you restart the Orbit Customizer.)" << endl;
         Answer = yes_no();
         if(Answer == "yes")
             break;
@@ -377,7 +297,7 @@ int Rand_Orbit_Gen(Attributes* Body, float &GenMass, float &GenRadius, vector<Ce
     
     Pos[0] = P1[0];
     //Make sure velocity vector is correct 3-D vector//
-    if(Axis == 'Z' || Axis == 'X'){//x-y coordinate to x-z plane
+    if(Active.Axis == 'Z' || Active.Axis == 'X'){//x-y coordinate to x-z plane
         Vel[2] = -Vel[1];
         Vel[1] = 0.0;
         Pos[2] = -P1[1];
@@ -389,11 +309,11 @@ int Rand_Orbit_Gen(Attributes* Body, float &GenMass, float &GenRadius, vector<Ce
     }
            
     //Apply inverse rotational transformation to Initial velocity vectors//
-    Rotate(Vel, Axis, -Theta);//HERE//
-    Rotate(Pos, Axis, -Theta);
+    Rotate(Vel, -Theta);
+    Rotate(Pos, -Theta);
     
     //Calculate Initial Velocity with respect to origin in World Space(Rather than with respect to the body being orbited//
-    Vel[0] += OrbVel[0];//HERE
+    Vel[0] += OrbVel[0];
     Vel[1] += OrbVel[1];
     Vel[2] += OrbVel[2];
     Pos[0] -= translate[0];
@@ -414,7 +334,7 @@ int Rand_Orbit_Gen(Attributes* Body, float &GenMass, float &GenRadius, vector<Ce
 /////////////////////////////////////////////////////////////////////////////////////////////////////        
 }
             
-int Gen_Position(vector<CelestialPtr> &Solar_Bodies, float Radius, double* Pos, double* OrbPos){
+int Generator::Gen_Position(vector<CelestialPtr> &Solar_Bodies, float Radius, double* Pos, double* OrbPos){
     double Dec;
     double Val;
     int Power;
@@ -427,60 +347,60 @@ int Gen_Position(vector<CelestialPtr> &Solar_Bodies, float Radius, double* Pos, 
     int Count = 0;
     while(Count < 10000){
         Conflict = false;
-        if(Pos_Val.X == Maybe){
+        if(Active.Pos_Val.X == Maybe){
             if((rand() % 2) == 0)
                 signx = true;//Positive//
             else
                 signx = false;//Negative//
         }
-        else if(Pos_Val.X == Yes)
+        else if(Active.Pos_Val.X == Yes)
             signx = true;//Positive
         else
             signx = false;//Negative
 
-        if(Pos_Val.Y == Maybe){
+        if(Active.Pos_Val.Y == Maybe){
             if((rand() % 2) == 0)
                 signy = true;//Positive//
             else
                 signy = false;//Negative//
         }
-        else if(Pos_Val.Y == Yes)
+        else if(Active.Pos_Val.Y == Yes)
             signy = true;//Positive
         else
             signy = false;//Negative    
 
-        if(Pos_Val.Z == Maybe){
+        if(Active.Pos_Val.Z == Maybe){
             if((rand() % 2) == 0)
                 signz = true;//Positive//
             else
                 signz = false;//Negative//
         }
-        else if(Pos_Val.Z == Yes)
+        else if(Active.Pos_Val.Z == Yes)
             signz = true;//Positive
         else
             signz = false;//Negative    
 
-        Dec = (double)(rand() % (int)pow(10,Pos_Val.Decimalx))/(pow(10,Pos_Val.Decimalx));
-        Val = (rand() % (Pos_Val.Maxx - Pos_Val.Minx + 1)) + Pos_Val.Minx;
-        Power = (rand() % (Pos_Val.Powerxmax - Pos_Val.Powerxmin + 1)) + Pos_Val.Powerxmin;
+        Dec = (double)(rand() % (int)pow(10,Active.Pos_Val.Decimalx))/(pow(10,Active.Pos_Val.Decimalx));
+        Val = (rand() % (Active.Pos_Val.Maxx - Active.Pos_Val.Minx + 1)) + Active.Pos_Val.Minx;
+        Power = (rand() % (Active.Pos_Val.Powerxmax - Active.Pos_Val.Powerxmin + 1)) + Active.Pos_Val.Powerxmin;
         Val += Dec;
         if(signx)
             Pos[0] = Val*pow(10,Power);
         else
             Pos[0] = -Val*pow(10,Power);
 
-        Dec = (double)(rand() % (int)pow(10,Pos_Val.Decimaly))/(pow(10,Pos_Val.Decimaly));
-        Val = (rand() % (Pos_Val.Maxy - Pos_Val.Miny + 1)) + Pos_Val.Miny;
-        Power = (rand() % (Pos_Val.Powerymax - Pos_Val.Powerymin + 1)) + Pos_Val.Powerymin;
+        Dec = (double)(rand() % (int)pow(10,Active.Pos_Val.Decimaly))/(pow(10,Active.Pos_Val.Decimaly));
+        Val = (rand() % (Active.Pos_Val.Maxy - Active.Pos_Val.Miny + 1)) + Active.Pos_Val.Miny;
+        Power = (rand() % (Active.Pos_Val.Powerymax - Active.Pos_Val.Powerymin + 1)) + Active.Pos_Val.Powerymin;
         Val += Dec;
         if(signy)
             Pos[1] = Val*pow(10,Power);
         else
             Pos[1] = -Val*pow(10,Power);
 
-        Dec = (double)(rand() % (int)pow(10,Pos_Val.Decimalz))/(pow(10,Pos_Val.Decimalz));
-        Val = (rand() % (Pos_Val.Maxz - Pos_Val.Minz + 1)) + Pos_Val.Minz;
-        Power = (rand() % (Pos_Val.Powerzmax - Pos_Val.Powerzmin + 1)) + Pos_Val.Powerzmin;
+        Dec = (double)(rand() % (int)pow(10,Active.Pos_Val.Decimalz))/(pow(10,Active.Pos_Val.Decimalz));
+        Val = (rand() % (Active.Pos_Val.Maxz - Active.Pos_Val.Minz + 1)) + Active.Pos_Val.Minz;
+        Power = (rand() % (Active.Pos_Val.Powerzmax - Active.Pos_Val.Powerzmin + 1)) + Active.Pos_Val.Powerzmin;
         Val += Dec;
         if(signz)
             Pos[2] = Val*pow(10,Power);    
@@ -503,61 +423,61 @@ int Gen_Position(vector<CelestialPtr> &Solar_Bodies, float Radius, double* Pos, 
             return 0;
         Count++;
     }
-    cout << "Error, failed to generate a proper orbital position far enough away from " << Orbit << ".\nRadius of " << Orbit << " might"
-            "be too large and creating conflict.\nSuggestion: Change the Generator Settings to allow orbit generation farther away from " << Orbit << "." << endl;
+    cout << "Error, failed to generate a proper orbital position far enough away from " << Active.Orbit << ".\nRadius of " << Active.Orbit << " might"
+            "be too large and creating conflict.\nSuggestion: Change the Generator Settings to allow orbit generation farther away from " << Active.Orbit << "." << endl;
     return 1;
 }
 
-float Gen_Mass(float *Orb){
+float Generator::Gen_Mass(float *Orb){
     float Val;
     float Dec;
     float Power;
     int Count = 0;
     while(Count < 10000){
-        Dec = (float)(rand() % (int)pow(10,Mass_Val.Decimal))/(pow(10,Mass_Val.Decimal));
-        Val = (rand() % (Mass_Val.Max - Mass_Val.Min + 1)) + Mass_Val.Min;
-        Power = (rand() % (Mass_Val.Powermax - Mass_Val.Powermin + 1)) + Mass_Val.Powermin;
+        Dec = (float)(rand() % (int)pow(10,Active.Mass_Val.Decimal))/(pow(10,Active.Mass_Val.Decimal));
+        Val = (rand() % (Active.Mass_Val.Max - Active.Mass_Val.Min + 1)) + Active.Mass_Val.Min;
+        Power = (rand() % (Active.Mass_Val.Powermax - Active.Mass_Val.Powermin + 1)) + Active.Mass_Val.Powermin;
         Val += Dec;    
         Val = Val*pow(10,Power);
         if(Verify_Mass(&Val, Orb))
             return Val;
         Count++;
     }
-    cout << "Error, could not generate an acceptable mass value. Mass of " << Orbit << " might be too large." << endl;
+    cout << "Error, could not generate an acceptable mass value. Mass of " << Active.Orbit << " might be too large." << endl;
     return -1;
 }
 
-bool Verify_Mass(float *Obj, float *Orb){
+bool Generator::Verify_Mass(float *Obj, float *Orb){
     if(*Obj > FLT_MAX/(*Orb))
         return false;
     return true;
 }
 
-float Gen_Radius(){
-    float Dec = (float)(rand() % (int)pow(10,Rad_Val.Decimal))/(pow(10,Rad_Val.Decimal));
-    float Val = (rand() % (Rad_Val.Max - Rad_Val.Min + 1)) + Rad_Val.Min;
-    int Power = (rand() % (Rad_Val.Powermax - Rad_Val.Powermin + 1)) + Rad_Val.Powermin;
+float Generator::Gen_Radius(){
+    float Dec = (float)(rand() % (int)pow(10,Active.Rad_Val.Decimal))/(pow(10,Active.Rad_Val.Decimal));
+    float Val = (rand() % (Active.Rad_Val.Max - Active.Rad_Val.Min + 1)) + Active.Rad_Val.Min;
+    int Power = (rand() % (Active.Rad_Val.Powermax - Active.Rad_Val.Powermin + 1)) + Active.Rad_Val.Powermin;
     Val += Dec;
     return Val*pow(10,Power);
 }
 
-float Gen_Eccent(){
-    float Dec = (float)(rand() % (int)pow(10,Ecc_Dec))/(pow(10,Ecc_Dec));
-    float Val = (rand() % (Ecc_Range + 1));
+float Generator::Gen_Eccent(){
+    float Dec = (float)(rand() % (int)pow(10,Active.Ecc_Dec))/(pow(10,Active.Ecc_Dec));
+    float Val = (rand() % (Active.Ecc_Range + 1));
     if(Val < 2)
         Val += Dec;
     return Val;
 }
 
-double SLRec_Calc(const float Eccent, const double* P1, const float Peri){
+double Generator::SLRec_Calc(const float Eccent, const double* P1, const float Peri){
     double r = sqrt(pow(P1[0],2) + pow(P1[1],2));
     float Theta = get_theta(P1[0], P1[1], r);
     return r*(1 + Eccent*cos(Theta - Peri));    
 }
 
-float get_rotation(char Axis, double* Pos){
+float Generator::get_rotation(double* Pos){
     float Phi;
-    switch(Axis){
+    switch(Active.Axis){
         case 'Z':
             if(Pos[0] == 0){
                 if(Pos[1] == 0)
@@ -597,12 +517,11 @@ float get_rotation(char Axis, double* Pos){
     return Phi;
 }
 
-
-void Rotate(double* PS, const char Axis, float phi){
+void Generator::Rotate(double* PS, float phi){
     float E = cos(phi);
     float F = sin(phi);
     double a, b;
-    switch(Axis){
+    switch(Active.Axis){
         case 'Z':
             a = PS[0];
             b = PS[1];
@@ -624,7 +543,7 @@ void Rotate(double* PS, const char Axis, float phi){
     } 
 }
 
-float get_theta(double x, double y, double r){
+float Generator::get_theta(double x, double y, double r){
     float theta;   
     if(0 <= x && 0 <= y){
         if(x == 0)
@@ -649,7 +568,7 @@ float get_theta(double x, double y, double r){
     return theta;
 }
 
-void Specify_Path(vector<double*> &Points, double* P1, float* Theta, float Peri, float &Eccent, double &SLRec){
+void Generator::Specify_Path(vector<double*> &Points, double* P1, float* Theta, float Peri, float &Eccent, double &SLRec){
     int Status;
     string Answer;
     float ThetaCopy = *Theta;
@@ -699,7 +618,7 @@ void Specify_Path(vector<double*> &Points, double* P1, float* Theta, float Peri,
     }    
 }
 
-int Point_Sampler(vector<double*>& Points, float *SAngle, float *Theta){
+int Generator::Point_Sampler(vector<double*>& Points, float *SAngle, float *Theta){
     int Count = 1;
     vector<double> Inputs;// = {9923423432.0, -3249324.0, 3924.3294923, 32432499432.0, -32949324.0, 32943294943.0, 0.0, -3294923494.0};
     double Inputx, Inputy;
@@ -784,7 +703,7 @@ int Point_Sampler(vector<double*>& Points, float *SAngle, float *Theta){
     return POINT_SUCCESS;
 }
 
-double get_Error(vector<double*> &Points, float E, float Peri, double SL){
+double Generator::get_Error(vector<double*> &Points, float E, float Peri, double SL){
     double r;
     double Diff;
     double Error = 0.0;
@@ -799,7 +718,7 @@ double get_Error(vector<double*> &Points, float E, float Peri, double SL){
     return Error;
 }
 
-int LS_Calculations(vector<double*> &Points, double* Result, float Peri){
+int Generator::LS_Calculations(vector<double*> &Points, double* Result, float Peri){
     long int Size = Points.size();
     double A[Size][2];
     double AT[2][Size];
@@ -866,7 +785,7 @@ int LS_Calculations(vector<double*> &Points, double* Result, float Peri){
     return POINT_SUCCESS;
 }
 
-int Least_Squares(double* Results, double* P1, vector<double*> &Points, float SAngle){
+int Generator::Least_Squares(double* Results, double* P1, vector<double*> &Points, float SAngle){
     double y[2];
     double r;
     int Status;

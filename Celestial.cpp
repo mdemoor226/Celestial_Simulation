@@ -26,7 +26,7 @@ void Load_Sim(vector<Celestial> &Sims, Celestial &Active){
     string response = yes_no();
     if(response == "yes")Save_Sim(Sims, Active);
     
-    cout << "Enter the name of the simulation you like to load.\n";
+    cout << "Enter the name of the simulation you would like to load.\n";
     cin >> response;
     bool fake = true;
     for(Celestial Sim : Sims){
@@ -76,8 +76,7 @@ void View_Sims(vector<Celestial> &Sims){
 }
 
 int main(){
-    srand(static_cast<unsigned int>(time(0)));
-    Initialize();   
+    srand(static_cast<unsigned int>(time(0)));  
     Celestial Sim_Init("Default");
     Celestial Active_Sim = Sim_Init; 
     Init_Sim(&Active_Sim);
@@ -92,7 +91,7 @@ int main(){
         if(In == "add")
             Active_Sim.Add_Object(&Active_Sim);        
         else if(In == "settings")
-            Set_Defaults();
+            Active_Sim.Change_Settings();
         else if(In == "remove")
             Active_Sim.Remove_Object();
         else if(In == "display")

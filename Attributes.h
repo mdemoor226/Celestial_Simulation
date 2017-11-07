@@ -92,18 +92,17 @@ struct iRadius{
     int Decimal;
 };
 
-void Set_Defaults();
-void Initialize();
-
-//Orbit Generator Settings Support Functions//
-void print_settings();
-void Set_Settings(bool Def);
-void Set_Body(bool Def);
-void Set_Axis(bool Def);
-void Set_Eccentric(bool Def);
-void Set_Radius(bool Def);
-void Set_Position(bool Def);
-void Set_Mass(bool Def);
+//Settings//
+struct Options{
+    Settings Set;
+    iMass Mass_Val;
+    iPosition Pos_Val;
+    iRadius Rad_Val;
+    int Ecc_Dec;
+    int Ecc_Range;
+    std::string Orbit;
+    char Axis;   
+};
 
 //Input verification functions//
 std::string str_lower(const std::string);
