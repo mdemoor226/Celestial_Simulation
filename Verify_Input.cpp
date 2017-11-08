@@ -22,7 +22,7 @@ string str_lower(const string Input){//This function can be replaced by a macro/
 }
 
 bool verify_input(string Input){
-    if(str_lower(Input) == "finished")
+    if(str_lower(Input) == "done")
         return true;
     int DotCount = 0;
     int Begin = 0;

@@ -23,13 +23,13 @@ void Celestial::Add_Object(Celestial* Sim){
     string IN, Name, Type;
     int Count = 0;
     float Mass, Radius;
-    cout << "\nEnter 'Finished' when you're done entering objects. Any object that isn't completely specified will not be added." << endl;
+    cout << "\nEnter 'Done' when you're done entering objects. Any object that isn't completely specified will not be added." << endl;
     while(true){
         cout << "Objects Added: " << Count << endl;        
         cout << "Please enter object name." << endl;
         cin >> IN;
-        if(str_lower(IN) == "finished")
-            break;
+        if(str_lower(IN) == "done")break;
+
         bool exist = false;
         //Test whether object currently exists already or not//
         for(CelestialPtr Object : Celestial_Bodies){
@@ -47,11 +47,13 @@ void Celestial::Add_Object(Celestial* Sim){
             while(true){
                 cin >> Type;
                 Type = str_lower(Type);
-                if(Type == "star" || Type == "planet" || Type == "moon" || Type == "black_hole" || Type == "other")
+                if(Type == "star" || Type == "planet" || Type == "moon" || Type == "black_hole" || Type == "other" || Type == "done")
                     break;
                 cout << "Error, invalid input. (Star, Planet, Moon, Black_Hole, Other)" << endl;
             }
         }
+	if(Type == "done")break;
+
         Name = IN;
         IN = "no";
         if(!Celestial_Bodies.empty()){
@@ -67,58 +69,49 @@ void Celestial::Add_Object(Celestial* Sim){
             cout << "\nPlease enter Mass value." << endl;
             while(true){
                 IN = verify_double();
-                if(str_lower(IN) == "finished" || 0 < convert(IN))
-                    break;
+                if(str_lower(IN) == "done" || 0 < convert(IN))break;
                 cout << "Invalid value. Enter a positive mass value" << endl;
             }
-            if(str_lower(IN) == "finished")
-                break;
+            if(str_lower(IN) == "done")break;
             Mass = convert(IN);
 
             cout << "\nPlease enter Rx value." << endl;
             IN = verify_double();
-            if(str_lower(IN) == "finished")
-                break; 
+            if(str_lower(IN) == "done")break; 
             Celestial.Rx = convert(IN);
 
             cout << "\nPlease enter Ry value." << endl;
             IN = verify_double();
-            if(str_lower(IN) == "finished")
-                break; 
+            if(str_lower(IN) == "done")break; 
             Celestial.Ry = convert(IN);
 
             cout << "\nPlease enter Rz value." << endl;
             IN = verify_double();
-            if(str_lower(IN) == "finished")
-                break; 
+            if(str_lower(IN) == "done")break; 
             Celestial.Rz = convert(IN);
 
             cout << "\nPlease enter Vx value." << endl;
             IN = verify_double();
-            if(str_lower(IN) == "finished")
-                break; 
+            if(str_lower(IN) == "done")break; 
             Celestial.Vx = convert(IN);        
 
             cout << "\nPlease enter Vy value." << endl;
             IN = verify_double();
-            if(str_lower(IN) == "finished")
-                break; 
+            if(str_lower(IN) == "done")break; 
             Celestial.Vy = convert(IN); 
 
             cout << "\nPlease enter Vz value." << endl;
             IN = verify_double();
-            if(str_lower(IN) == "finished")
-                break; 
+            if(str_lower(IN) == "done")break; 
             Celestial.Vz = convert(IN);          
 
             cout << "\nPlease enter Radius value." << endl;
             while(true){
                 IN = verify_double();
-                if(str_lower(IN) == "finished" || 0 < convert(IN))
-                    break;
+                if(str_lower(IN) == "done" || 0 < convert(IN))break;
                 cout << "Invalid value. Enter a positive radius value" << endl;
             }
-            if(str_lower(IN) == "finished")
+            if(str_lower(IN) == "done")
                 break; 
             Radius = convert(IN);
         }

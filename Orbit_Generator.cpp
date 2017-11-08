@@ -265,8 +265,8 @@ int Generator::Rand_Orbit_Gen(Attributes* Body, float &GenMass, float &GenRadius
     }
     
     if(!Points.empty()){//Deallocate all memory in "Points" and clear vector//Possible Memory Leak//
-        for(vector<double*>::const_iterator Point=Points.begin(); Point!=Points.end(); ++Point)
-            delete[] *Point;
+        vector<double*>::const_iterator Point=Points.begin();
+        delete[] *Point;
         Points.clear();
         Points.shrink_to_fit();
     }
@@ -625,8 +625,8 @@ int Generator::Point_Sampler(vector<double*>& Points, float *SAngle, float *Thet
     string number;
     bool equal;    
     if(!Points.empty()){//Possible Memory Leak//
-        for(vector<double*>::const_iterator Point=Points.begin(); Point!=Points.end(); ++Point)
-            delete[] *Point;    
+        vector<double*>::const_iterator Point=Points.begin();
+        delete[] *Point;
         Points.clear();
         Points.shrink_to_fit();
     }
