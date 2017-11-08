@@ -281,7 +281,7 @@ void Generator::Set_Settings(bool Def){//Change the Default Settings//
                 if(Answer == "partially")
                     Default.Set.IMass = Partial;
                 if(Answer == "default")
-                    Default.Set.IMass == Zero;                
+                    Default.Set.IMass = Zero;                
             }
             else{
                 if(Answer == "fully")
@@ -289,7 +289,7 @@ void Generator::Set_Settings(bool Def){//Change the Default Settings//
                 if(Answer == "partially")
                     Active.Set.IMass = Partial;
                 if(Answer == "default")
-                    Active.Set.IMass == Zero;
+                    Active.Set.IMass = Zero;
             }
         }
         else if(Answer == "iposition"){
@@ -309,7 +309,7 @@ void Generator::Set_Settings(bool Def){//Change the Default Settings//
                 if(Answer == "partially")
                     Default.Set.IPosition = Partial;
                 if(Answer == "default")
-                    Default.Set.IPosition == Zero;                 
+                    Default.Set.IPosition = Zero;                 
             }
             else{
                 if(Answer == "fully")
@@ -317,7 +317,7 @@ void Generator::Set_Settings(bool Def){//Change the Default Settings//
                 if(Answer == "partially")
                     Active.Set.IPosition = Partial;
                 if(Answer == "default")
-                    Active.Set.IPosition == Zero;
+                    Active.Set.IPosition = Zero;
             }
         }
         else if(Answer == "iradius"){
@@ -337,7 +337,7 @@ void Generator::Set_Settings(bool Def){//Change the Default Settings//
                 if(Answer == "partially")
                     Default.Set.IRadius = Partial;
                 if(Answer == "default")
-                    Default.Set.IRadius == Zero;                 
+                    Default.Set.IRadius = Zero;                 
             }
             else{
                 if(Answer == "fully")
@@ -345,7 +345,7 @@ void Generator::Set_Settings(bool Def){//Change the Default Settings//
                 if(Answer == "partially")
                     Active.Set.IRadius = Partial;
                 if(Answer == "default")
-                    Active.Set.IRadius == Zero;
+                    Active.Set.IRadius = Zero;
             }
         }
         else if(Answer == "ieccentric"){
@@ -366,7 +366,7 @@ void Generator::Set_Settings(bool Def){//Change the Default Settings//
                 if(Answer == "partially")
                     Default.Set.IEccentric = Partial;
                 if(Answer == "default")
-                    Default.Set.IEccentric == Zero;                 
+                    Default.Set.IEccentric = Zero;                 
             }
             else{
                 Active.Set.Sampler = false;
@@ -375,7 +375,7 @@ void Generator::Set_Settings(bool Def){//Change the Default Settings//
                 if(Answer == "partially")
                     Active.Set.IEccentric = Partial;
                 if(Answer == "default")
-                    Active.Set.IEccentric == Zero;
+                    Active.Set.IEccentric = Zero;
             }
         }
         else{
